@@ -11,22 +11,27 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import logo from "../../public/assets/logo.png";
+import gsap from "gsap";
+
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/new-cars", label: "Shop" },
-  { href: "/used-cars", label: "Blogs" },
-  { href: "/sell-trade", label: "Sell/Trade" },
-  { href: "/reviews", label: "Reviews" },
+  { href: "/shop", label: "Shop" },
+  { href: "/blogs", label: "Blogs" },
 ];
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  const logoRef = useRef(null);
+  const navRef = useRef(null);
+  const buttonsRef = useRef(null);
+
+  // Scroll behavior
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -36,12 +41,31 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // GSAP animations
+  useEffect(() => {
+    gsap.from(logoRef.current, { x: -50, opacity: 0, duration: 1 });
+    gsap.from(navRef.current, { y: -30, opacity: 0, duration: 1, delay: 0.3 });
+    gsap.from(buttonsRef.current, {
+      x: 50,
+      opacity: 0,
+      duration: 1,
+      delay: 0.6,
+    });
+  }, []);
+
   return (
-    <nav className="w-full flex items-center justify-between px-4 md:px-6 py-2 sticky top-0 z-50 transition-all duration-300">
+    <nav
+      className={`w-full flex items-center justify-between md:px-20  sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-[#222232] shadow-md backdrop-blur-md"
+          : "bg-transparent"
+      }`}
+    >
       {/* Logo */}
       <Link
         href="/"
         className="flex items-center hover:scale-105 transition-transform duration-200"
+        ref={logoRef}
       >
         <Image
           src={logo}
@@ -53,16 +77,21 @@ export default function Navbar() {
         />
       </Link>
 
-      {/* Desktop Navigation */}
-      <ul className="hidden md:flex items-center space-x-6 text-sm font-medium">
+      {/* Desktop Nav */}
+      <ul
+        className="hidden md:flex flex-1 justify-center items-center space-x-8 text-sm font-medium"
+        ref={navRef}
+      >
         {navLinks.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className={`hover:font-semibold ${
+              className={`transition-colors ${
                 pathname === link.href
-                  ? "text-[#8abe96] after:w-full after:bg-green-600"
-                  : "text-gray-100 hover:text-[#8abe96] after:w-0 after:bg-gray-100 hover:after:w-full"
+                  ? "text-[#8abe96] font-semibold"
+                  : isScrolled
+                  ? "text-white hover:text-[#8abe96]"
+                  : "text-white hover:text-[#8abe96]"
               }`}
             >
               {link.label}
@@ -71,6 +100,21 @@ export default function Navbar() {
         ))}
       </ul>
 
+      {/* Auth Buttons */}
+      <div className="hidden md:flex items-center space-x-4" ref={buttonsRef}>
+        <Button
+          variant="ghost"
+          className={`${
+            isScrolled ? "text-green-600" : "text-green-300"
+          } hover:text-green-700`}
+        >
+          Login
+        </Button>
+        <Button className="bg-green-600 text-white hover:bg-green-700">
+          Sign Up
+        </Button>
+      </div>
+
       {/* Mobile Menu */}
       <div className="md:hidden">
         <Sheet>
@@ -78,14 +122,17 @@ export default function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              className={`h-9 w-9 hover:bg-gray-100 ${
-                isScrolled ? "text-gray-800" : "text-gray-100"
-              }`}
+              className={`h-9 w-9 ${
+                isScrolled ? "text-gray-800" : "text-white"
+              } hover:bg-white/10`}
             >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-full max-w-xs bg-white">
+          <SheetContent
+            side="right"
+            className="w-full max-w-xs backdrop-blur-md bg-white/80 dark:bg-black/60"
+          >
             <SheetHeader>
               <SheetTitle className="text-left">
                 <p className="text-xl text-[#8abe96] font-bold">Gachpala</p>
@@ -98,14 +145,28 @@ export default function Navbar() {
                     href={link.href}
                     className={`block py-1.5 px-4 text-base font-medium rounded-lg transition-colors ${
                       pathname === link.href
-                        ? "bg-orange-100/50 text-orange-600"
-                        : "text-gray-700 hover:bg-gray-50"
+                        ? "bg-green-100 text-green-700"
+                        : "text-gray-800 hover:bg-gray-100"
                     }`}
                   >
                     {link.label}
                   </Link>
                 </li>
               ))}
+              <li className="mt-6 border-t pt-4 px-4">
+                <Link
+                  href="/login"
+                  className="block text-green-600 hover:underline"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="block mt-2 text-green-700 font-semibold hover:underline"
+                >
+                  Sign Up
+                </Link>
+              </li>
             </ul>
           </SheetContent>
         </Sheet>

@@ -30,7 +30,7 @@ const HomePage = () => {
       </h1>
 
       <div ref={paraRef} className="max-w-3xl mt-4">
-        <p className="font-sans text-lg font-semibold text-gray-400 dark:text-gray-200">
+        <p className=" text-lg font-semibold text-gray-400 dark:text-gray-200 text-justify">
           Gachpala is your smart companion for plant analysis and care. Our
           advanced plant health monitoring tools help you diagnose garden issues
           and optimize growth. Discover a wide range of healthy indoor and

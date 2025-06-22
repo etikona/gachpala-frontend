@@ -18,8 +18,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={spaceGrotesk.variable}>
-      <body className={`font-sans antialiased dark-theme`}>
+    <html lang="en">
+      <body className={` antialiased dark-theme ${spaceGrotesk.variable}`}>
         <Navbar />
         {children}
         <Footer />
