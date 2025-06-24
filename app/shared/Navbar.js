@@ -56,9 +56,7 @@ export default function Navbar() {
   return (
     <nav
       className={`w-full flex items-center justify-between md:px-20  sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-[#222232] shadow-md backdrop-blur-md"
-          : "bg-transparent"
+        isScrolled ? "bg-[#14141b] shadow-md backdrop" : "bg-transparent"
       }`}
     >
       {/* Logo */}
