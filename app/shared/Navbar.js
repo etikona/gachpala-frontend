@@ -1,8 +1,8 @@
 "use client";
-
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import {
   Sheet,
   SheetContent,
@@ -100,16 +100,20 @@ export default function Navbar() {
 
       {/* Auth Buttons */}
       <div className="hidden md:flex items-center space-x-4" ref={buttonsRef}>
+        {/* Login Button */}
         <Button
+          asChild
           variant="ghost"
           className={`${
             isScrolled ? "text-green-600" : "text-green-300"
           } hover:text-green-700`}
         >
-          Login
+          <Link href="/login/user">Login</Link>
         </Button>
-        <Button className="bg-green-600 text-white hover:bg-green-700">
-          Sign Up
+
+        {/* Signup Button */}
+        <Button asChild className="bg-green-600 text-white hover:bg-green-700">
+          <Link href="/signup">Sign Up</Link>
         </Button>
       </div>
 
@@ -133,7 +137,20 @@ export default function Navbar() {
           >
             <SheetHeader>
               <SheetTitle className="text-left">
-                <p className="text-xl text-[#8abe96] font-bold">Gachpala</p>
+                <Link
+                  href="/"
+                  className="flex items-center hover:scale-105 transition-transform duration-200"
+                  ref={logoRef}
+                >
+                  <Image
+                    src={logo}
+                    alt="Gachpala Logo"
+                    width={60}
+                    height={60}
+                    className="w-12 md:w-16 h-auto object-contain"
+                    priority
+                  />
+                </Link>
               </SheetTitle>
             </SheetHeader>
             <ul className="mt-6 space-y-3">
@@ -151,20 +168,27 @@ export default function Navbar() {
                   </Link>
                 </li>
               ))}
-              <li className="mt-6 border-t pt-4 px-4">
-                <Link
-                  href="/login"
-                  className="block text-green-600 hover:underline"
+              {/* Auth Buttons */}
+              <div
+                className="hidden md:flex sm:flex items-center space-x-4"
+                ref={buttonsRef}
+              >
+                <Button
+                  asChild
+                  variant="ghost"
+                  className={`${
+                    isScrolled ? "text-green-700" : "text-green-600"
+                  } hover:text-green-800`}
                 >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block mt-2 text-green-700 font-semibold hover:underline"
+                  <Link href="/login/user">Login</Link>
+                </Button>
+                <Button
+                  asChild
+                  className="bg-green-600 text-white hover:bg-green-700"
                 >
-                  Sign Up
-                </Link>
-              </li>
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </div>
             </ul>
           </SheetContent>
         </Sheet>
