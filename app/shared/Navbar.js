@@ -113,7 +113,7 @@ export default function Navbar() {
 
         {/* Signup Button */}
         <Button asChild className="bg-green-600 text-white hover:bg-green-700">
-          <Link href="/signup">Sign Up</Link>
+          <Link href="/register/user">Sign Up</Link>
         </Button>
       </div>
 
@@ -186,7 +186,7 @@ export default function Navbar() {
                   asChild
                   className="bg-green-600 text-white hover:bg-green-700"
                 >
-                  <Link href="/signup">Sign Up</Link>
+                  <Link href="/register/user">Sign Up</Link>
                 </Button>
               </div>
             </ul>
