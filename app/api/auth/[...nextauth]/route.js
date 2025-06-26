@@ -8,31 +8,27 @@ const handler = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-        loginType: { label: "LoginType", type: "text" }, // 'user' or 'seller'
       },
       async authorize(credentials) {
-        let loginUrl;
-
-        if (credentials.loginType === "seller") {
-          loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/seller/login`;
-        } else {
-          loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/login`;
-        }
-
         try {
-          const res = await fetch(loginUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          });
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: credentials.email,
+                password: credentials.password,
+              }),
+            }
+          );
 
           const user = await res.json();
-          if (res.ok && user) return user;
+          if (res.ok && user) {
+            return user;
+          }
         } catch (err) {
-          console.error("Login error:", err);
+          console.error("User login error:", err);
         }
 
         return null;
@@ -40,21 +36,21 @@ const handler = NextAuth({
     }),
   ],
   pages: {
-    signIn: "/login/user", // fallback
+    signIn: "/login/user", // default login page for users
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role || null;
         token.email = user.email;
+        token.role = user.role || "user";
       }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.id;
-      session.user.role = token.role;
       session.user.email = token.email;
+
       return session;
     },
   },
