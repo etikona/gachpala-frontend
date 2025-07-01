@@ -12,18 +12,21 @@ export default function UserLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async () => {
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-      role: "user",
+  const handleSellerLogin = async () => {
+    const res = await fetch("/api/seller/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+      headers: { "Content-Type": "application/json" },
     });
 
+    const data = await res.json();
+
     if (res.ok) {
-      router.push("/");
+      // Store token in localStorage or cookie
+      localStorage.setItem("sellerToken", data.token);
+      router.push("/seller/dashboard");
     } else {
-      alert("User login failed");
+      alert("Login failed");
     }
   };
 
@@ -39,7 +42,7 @@ export default function UserLoginPage() {
         onChange={(e) => setPassword(e.target.value)}
       />
       <Button
-        onClick={handleLogin}
+        onClick={handleSellerLogin}
         className="w-full   hover:bg-gray-200 hover:text-gray-800"
         variant="outline"
       >
