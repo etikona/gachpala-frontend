@@ -29,12 +29,10 @@ export default function SellerLogin() {
       }
 
       const response = await fetch(
-        `https://gachpala-server.onrender.com/api/v1/seller/login`,
+        "https://gachpala-server.onrender.com/api/v1/auth/admin/login",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         }
       );
@@ -46,7 +44,7 @@ export default function SellerLogin() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("sellerId", data.sellerId);
         toast.success("Login successful!");
-        router.push("/seller/dashboard");
+        router.push("/admin/dashboard");
       } else {
         toast.error(data.msg || "Login failed");
         console.error("Login failed:", data);
@@ -64,7 +62,7 @@ export default function SellerLogin() {
       <Card className="bg-gray-800 border-gray-700 shadow-lg w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-gray-100 text-center">
-            Seller Login
+            Admin Login
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -127,22 +125,9 @@ export default function SellerLogin() {
                   Logging in...
                 </span>
               ) : (
-                "Login as Seller"
+                "Login as Admin"
               )}
             </Button>
-
-            <div className="text-center text-gray-400 text-sm pt-2">
-              <p>
-                Dont have an account?
-                <button
-                  type="button"
-                  onClick={() => router.push("/register/seller")}
-                  className="text-green-400 hover:text-green-300 ml-1"
-                >
-                  Register here
-                </button>
-              </p>
-            </div>
           </form>
         </CardContent>
       </Card>
