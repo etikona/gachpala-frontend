@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Menu } from "lucide-react";
-
 import {
   Sheet,
   SheetContent,
@@ -12,10 +11,12 @@ import {
 } from "@/components/ui/sheet";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation"; // Added useRouter
 import Image from "next/image";
 import logo from "../../public/assets/logo.png";
 import gsap from "gsap";
+import { useDispatch, useSelector } from "react-redux"; // Added Redux hooks
+import { logout } from "../store/authSlice.js"; // Added logout action
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -25,13 +26,17 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter(); // Initialize router
   const [isScrolled, setIsScrolled] = useState(false);
+  const dispatch = useDispatch();
+
+  // Get authentication state from Redux
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const logoRef = useRef(null);
   const navRef = useRef(null);
   const buttonsRef = useRef(null);
 
-  // Scroll behavior
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -41,7 +46,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // GSAP animations
   useEffect(() => {
     gsap.from(logoRef.current, { x: -50, opacity: 0, duration: 1 });
     gsap.from(navRef.current, { y: -30, opacity: 0, duration: 1, delay: 0.3 });
@@ -53,9 +57,23 @@ export default function Navbar() {
     });
   }, []);
 
+  // Handle logout functionality
+  const handleLogout = () => {
+    // Clear cookies
+    document.cookie = "token=; Max-Age=0; path=/";
+    document.cookie = "loginType=; Max-Age=0; path=/";
+
+    // Clear localStorage and Redux state
+    localStorage.removeItem("user");
+    dispatch(logout());
+
+    // Redirect to home
+    router.push("/");
+  };
+
   return (
     <nav
-      className={`w-full flex items-center justify-between md:px-20  sticky top-0 z-50 transition-all duration-300 ${
+      className={`w-full flex items-center justify-between md:px-20 sticky top-0 z-50 transition-all duration-300 ${
         isScrolled ? "bg-[#14141b] shadow-md backdrop" : "bg-transparent"
       }`}
     >
@@ -100,21 +118,34 @@ export default function Navbar() {
 
       {/* Auth Buttons */}
       <div className="hidden md:flex items-center space-x-4" ref={buttonsRef}>
-        {/* Login Button */}
-        <Button
-          asChild
-          variant="ghost"
-          className={`${
-            isScrolled ? "text-green-600" : "text-green-300"
-          } hover:text-green-700`}
-        >
-          <Link href="/login/user">Login</Link>
-        </Button>
-
-        {/* Signup Button */}
-        <Button asChild className="bg-green-600 text-white hover:bg-green-700">
-          <Link href="/register/user">Sign Up</Link>
-        </Button>
+        {isAuthenticated ? (
+          // Logout button when authenticated
+          <Button
+            onClick={handleLogout}
+            className="bg-red-600 text-white hover:bg-red-700"
+          >
+            Logout
+          </Button>
+        ) : (
+          // Login/Signup when not authenticated
+          <>
+            <Button
+              asChild
+              variant="ghost"
+              className={`${
+                isScrolled ? "text-green-600" : "text-green-300"
+              } hover:text-green-700`}
+            >
+              <Link href="/login/user">Login</Link>
+            </Button>
+            <Button
+              asChild
+              className="bg-green-600 text-white hover:bg-green-700"
+            >
+              <Link href="/register/user">Sign Up</Link>
+            </Button>
+          </>
+        )}
       </div>
 
       {/* Mobile Menu */}
@@ -140,7 +171,6 @@ export default function Navbar() {
                 <Link
                   href="/"
                   className="flex items-center hover:scale-105 transition-transform duration-200"
-                  ref={logoRef}
                 >
                   <Image
                     src={logo}
@@ -168,26 +198,33 @@ export default function Navbar() {
                   </Link>
                 </li>
               ))}
-              {/* Auth Buttons */}
-              <div
-                className="hidden md:flex sm:flex items-center space-x-4"
-                ref={buttonsRef}
-              >
-                <Button
-                  asChild
-                  variant="ghost"
-                  className={`${
-                    isScrolled ? "text-green-700" : "text-green-600"
-                  } hover:text-green-800`}
-                >
-                  <Link href="/login/user">Login</Link>
-                </Button>
-                <Button
-                  asChild
-                  className="bg-green-600 text-white hover:bg-green-700"
-                >
-                  <Link href="/register/user">Sign Up</Link>
-                </Button>
+
+              {/* Mobile Auth Buttons */}
+              <div className="flex flex-col space-y-3 pt-4">
+                {isAuthenticated ? (
+                  <Button
+                    onClick={handleLogout}
+                    className="bg-red-600 text-white hover:bg-red-700 w-full"
+                  >
+                    Logout
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      className="text-green-600 hover:text-green-800 w-full"
+                    >
+                      <Link href="/login/user">Login</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      className="bg-green-600 text-white hover:bg-green-700 w-full"
+                    >
+                      <Link href="/register/user">Sign Up</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </ul>
           </SheetContent>

@@ -3,6 +3,7 @@ import "./globals.css";
 
 import Footer from "./shared/Footer";
 import Navbar from "./shared/Navbar";
+import ReduxProvider from "./ReduxProvider";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -20,9 +21,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={` antialiased dark-theme ${spaceGrotesk.variable}`}>
-        <Navbar />
-        {children}
-        <Footer />
+        <ReduxProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </ReduxProvider>
+        {/* {children} */}
       </body>
     </html>
   );

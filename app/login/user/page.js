@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,26 +11,34 @@ export default function UserLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSellerLogin = async () => {
-    const res = await fetch("/api/seller/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-      headers: { "Content-Type": "application/json" },
-    });
+  const handleUserLogin = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/login`,
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     const data = await res.json();
 
     if (res.ok) {
-      // Store token in localStorage or cookie
-      localStorage.setItem("sellerToken", data.token);
-      router.push("/seller/dashboard");
+      // Set cookies for auth token and loginType
+      document.cookie = `token=${data.token}; path=/`;
+      document.cookie = `loginType=user; path=/`;
+
+      // Optional: also store user info in localStorage if needed
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      router.push("/user/dashboard");
     } else {
       alert("Login failed");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-screen  mt-20 space-y-4 text-gray-200">
+    <div className="max-w-md mx-auto min-h-screen mt-20 space-y-4 text-gray-200">
       <h2 className="text-xl font-bold">User Login</h2>
       <Label>Email</Label>
       <Input value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -42,8 +49,8 @@ export default function UserLoginPage() {
         onChange={(e) => setPassword(e.target.value)}
       />
       <Button
-        onClick={handleSellerLogin}
-        className="w-full   hover:bg-gray-200 hover:text-gray-800"
+        onClick={handleUserLogin}
+        className="w-full hover:bg-gray-200 hover:text-gray-800"
         variant="outline"
       >
         Login as User
