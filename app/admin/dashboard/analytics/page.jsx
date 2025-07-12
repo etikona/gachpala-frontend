@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
       <div className="flex flex-col md:flex-row md:items-center gap-4">
         <div className="flex-1 flex gap-3">
           <div className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            {/* <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /> */}
             <Input
               placeholder="Search analytics..."
               className="pl-10 bg-gray-800/50 border-gray-700 text-white placeholder-gray-500"
