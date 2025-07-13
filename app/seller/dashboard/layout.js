@@ -1,6 +1,6 @@
+// app/seller/layout.jsx
 "use client";
 
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   Package,
@@ -12,6 +12,10 @@ import {
   Settings,
   Bell,
   Search,
+  CreditCard,
+  User,
+  FileText,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,8 +24,8 @@ import { Input } from "@/components/ui/input";
 export default function SellerLayout({ children }) {
   const pathname = usePathname();
 
-  // Helper to determine active tab
   const isActive = (path) => pathname === path;
+  const isActiveGroup = (path) => pathname.startsWith(path);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 flex">
@@ -52,7 +56,7 @@ export default function SellerLayout({ children }) {
             <Link href="/seller/dashboard/products">
               <div
                 className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
-                  pathname.startsWith("/seller/dashboard/products")
+                  isActiveGroup("/seller/dashboard/products")
                     ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/30"
                     : "text-gray-300 hover:bg-gray-700/50"
                 }`}
@@ -61,29 +65,47 @@ export default function SellerLayout({ children }) {
                 <span>Products</span>
               </div>
             </Link>
+
             <Link href="/seller/dashboard/orders">
               <div
                 className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
-                  pathname.startsWith("/seller/dashboard/orders")
+                  isActiveGroup("/seller/dashboard/orders")
                     ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/30"
                     : "text-gray-300 hover:bg-gray-700/50"
                 }`}
               >
-                <Package className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5" />
                 <span>Orders</span>
               </div>
             </Link>
 
-            {/* Other navigation links... */}
+            <Link href="/seller/dashboard/payments">
+              <div
+                className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
+                  isActiveGroup("/seller/dashboard/payments")
+                    ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-gray-300 hover:bg-gray-700/50"
+                }`}
+              >
+                <CreditCard className="h-5 w-5" />
+                <span>Payments</span>
+              </div>
+            </Link>
+
+            <Link href="/seller/dashboard/customers">
+              <div
+                className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
+                  isActiveGroup("/seller/dashboard/customers")
+                    ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-gray-300 hover:bg-gray-700/50"
+                }`}
+              >
+                <User className="h-5 w-5" />
+                <span>Customers</span>
+              </div>
+            </Link>
           </div>
         </nav>
-
-        <div className="mt-auto pt-4 border-t border-gray-700">
-          <button className="w-full flex items-center gap-3 p-3 rounded-lg text-gray-300 hover:bg-gray-700/50">
-            <Settings className="h-5 w-5" />
-            <span>Settings</span>
-          </button>
-        </div>
       </div>
 
       {/* Main Content */}
