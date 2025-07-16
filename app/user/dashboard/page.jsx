@@ -485,7 +485,7 @@ export default function PlantCareDashboard() {
           {activeTab === "plants" && (
             <div className="space-y-6">
               {/* Upload Card */}
-              <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-8 text-center shadow-xl">
+              {/* <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-8 text-center shadow-xl">
                 <div className="mx-auto bg-gray-700/30 border border-gray-600 w-20 h-20 rounded-full flex items-center justify-center mb-6">
                   <CloudUpload className="h-10 w-10 text-emerald-400" />
                 </div>
@@ -504,7 +504,7 @@ export default function PlantCareDashboard() {
                 <p className="text-emerald-400 text-sm mt-4">
                   {8 - uploadedImages} free scans remaining this month
                 </p>
-              </div>
+              </div> */}
 
               {/* Analysis Report */}
               <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-6 shadow-xl">
