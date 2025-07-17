@@ -18,6 +18,7 @@ import {
   MessageSquare,
   CreditCard,
   HelpCircle,
+  BookOpen, // Added for Blog icon
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
@@ -25,6 +26,8 @@ const navItems = [
   { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Users", path: "/admin/dashboard/users", icon: Users },
   { label: "Sellers", path: "/admin/dashboard/sellers", icon: Package },
+  // Added Blog menu item
+  { label: "Blog", path: "/admin/dashboard/blogs", icon: BookOpen },
   { label: "Orders", path: "/admin/dashboard/orders", icon: ShoppingCart },
   { label: "Messages", path: "/admin/dashboard/messages", icon: MessageSquare },
   { label: "Billing", path: "/admin/dashboard/billing", icon: CreditCard },
@@ -166,7 +169,9 @@ export default function AdminDashboardLayout({ children }) {
                   <div className="text-xs text-gray-400">admin@example.com</div>
                 </div>
                 <div className="relative">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-10 h-10" />
+                  <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl w-10 h-10 flex items-center justify-center text-white font-bold">
+                    A
+                  </div>
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"></div>
                 </div>
               </div>
@@ -234,7 +239,9 @@ export default function AdminDashboardLayout({ children }) {
         {/* Footer */}
         <footer className="bg-gray-900/80 backdrop-blur-md border-t border-gray-800 py-3 px-6">
           <div className="flex items-center justify-between text-sm text-gray-500">
-            <div>© 2023 Plant Commerce. All rights reserved.</div>
+            <div>
+              © {new Date().getFullYear()} Gachpala. All rights reserved.
+            </div>
             <div className="flex items-center gap-4">
               <span>v2.1.0</span>
               <div className="flex gap-2">
