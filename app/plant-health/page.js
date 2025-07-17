@@ -90,7 +90,7 @@ export default function PlantHealthPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 text-gray-100 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-300 mb-4">
+          <h1 className="text-3xl md:text-5xl mt-12 font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-300 mb-4">
             Plant Health AI Analyzer
           </h1>
           <p className="text-gray-400 max-w-2xl mx-auto">

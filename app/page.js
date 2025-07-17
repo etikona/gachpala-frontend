@@ -246,12 +246,12 @@ const HomePage = () => {
                     {feature.description}
                   </CardDescription>
                   <div className="h-48 relative rounded-lg overflow-hidden border border-slate-800">
-                    <Image
+                    {/* <Image
                       src={feature.image}
                       alt={feature.title}
                       fill
                       className="object-cover"
-                    />
+                    /> */}
                   </div>
                 </CardContent>
               </Card>
@@ -322,9 +322,9 @@ const HomePage = () => {
               <Input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-slate-800 border-slate-700 text-white py-6 flex-1"
+                className="bg-slate-800 border-slate-700 text-gray-100 font-bold py-6 flex-1"
               />
-              <Button className="py-6 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500">
+              <Button className="py-6 bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-800 hover:to-teal-700">
                 Get Started
               </Button>
             </div>
