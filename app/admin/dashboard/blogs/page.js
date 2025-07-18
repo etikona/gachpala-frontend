@@ -178,7 +178,7 @@ const BlogManagementPage = () => {
             </p>
           </div>
 
-          <Link href="/admin/dashboard/blog/new">
+          <Link href="/admin/dashboard/blogs/new">
             <Button className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 flex items-center gap-2">
               <Plus className="w-4 h-4" /> New Post
             </Button>
@@ -392,7 +392,7 @@ const BlogManagementPage = () => {
                           </div>
                           <div className="flex justify-end mt-3">
                             <Link
-                              href={`/admin/dashboard/blog/edit/${post.id}`}
+                              href={`/admin/dashboard/blogs/edit/${post.id}`}
                             >
                               <Button
                                 size="sm"
