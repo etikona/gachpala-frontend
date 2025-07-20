@@ -1,50 +1,57 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Rating from "@/components/Rating";
+import products from "@/app/data/products";
 
-export default function ProductDetails({ params }) {
-  const product = {
-    id: 1,
-    name: "Monstera Deliciosa",
-    price: 29.99,
-    description:
-      "The iconic Swiss Cheese Plant with beautiful fenestrated leaves. This tropical beauty is perfect for adding a jungle vibe to your space.",
-    care: "Prefers bright, indirect light. Water when top 2 inches of soil are dry.",
-    rating: 4.5,
-    reviews: [
-      {
-        id: 1,
-        user: "Alex J.",
-        rating: 5,
-        comment:
-          "Arrived in perfect condition! Already putting out new leaves.",
-        date: "2023-10-15",
-      },
-      {
-        id: 2,
-        user: "Sam R.",
-        rating: 4,
-        comment: "Beautiful plant but took a while to adjust to my space.",
-        date: "2023-09-28",
-      },
-    ],
+const ProductDetails = ({ params }) => {
+  const productId = parseInt(params.id);
+  const product = products.find((p) => p.id === productId);
+
+  const [quantity, setQuantity] = useState(1); // ✅ quantity state
+
+  const handleDecrement = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
   };
 
+  const handleIncrement = () => {
+    setQuantity(quantity + 1);
+  };
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-green-50 py-12 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-emerald-800">
+            Plant Not Found
+          </h1>
+          <p className="text-emerald-700 mt-4">
+            The plant you are looking for does not exist in our collection.
+          </p>
+          <Button className="mt-6 bg-emerald-600 hover:bg-emerald-700">
+            <a href="/products">Browse All Plants</a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-green-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Product Info */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-          {/* Image */}
           <div className="bg-emerald-100 rounded-xl aspect-square flex items-center justify-center p-12">
             <div className="bg-emerald-500 w-64 h-64 rounded-full"></div>
           </div>
 
-          {/* Details */}
           <div>
             <div className="mb-6">
-              <span className="text-emerald-600">Tropical Plants</span>
+              <span className="text-emerald-600">{product.category}</span>
               <h1 className="text-3xl font-serif font-bold text-emerald-800 mt-2 mb-4">
                 {product.name}
               </h1>
@@ -69,11 +76,19 @@ export default function ProductDetails({ params }) {
 
             <div className="flex items-center gap-4">
               <div className="flex items-center border border-emerald-300 rounded-lg">
-                <Button variant="ghost" className="text-emerald-700 text-xl">
+                <Button
+                  variant="ghost"
+                  className="text-emerald-700 text-xl"
+                  onClick={handleDecrement} // ✅
+                >
                   -
                 </Button>
-                <span className="px-4">1</span>
-                <Button variant="ghost" className="text-emerald-700 text-xl">
+                <span className="px-4">{quantity}</span> {/* ✅ dynamic */}
+                <Button
+                  variant="ghost"
+                  className="text-emerald-700 text-xl"
+                  onClick={handleIncrement} // ✅
+                >
                   +
                 </Button>
               </div>
@@ -101,7 +116,6 @@ export default function ProductDetails({ params }) {
             </div>
           </div>
 
-          {/* Review List */}
           <div className="space-y-6 mb-12">
             {product.reviews.map((review) => (
               <div key={review.id} className="border-b border-emerald-100 pb-6">
@@ -119,7 +133,6 @@ export default function ProductDetails({ params }) {
             ))}
           </div>
 
-          {/* Review Form */}
           <div>
             <h3 className="text-xl font-serif text-emerald-800 mb-6">
               Write a Review
@@ -160,4 +173,6 @@ export default function ProductDetails({ params }) {
       </div>
     </div>
   );
-}
+};
+
+export default ProductDetails;

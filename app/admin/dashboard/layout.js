@@ -29,11 +29,11 @@ const navItems = [
   // Added Blog menu item
   { label: "Blog", path: "/admin/dashboard/blogs", icon: BookOpen },
   { label: "Orders", path: "/admin/dashboard/orders", icon: ShoppingCart },
-  { label: "Messages", path: "/admin/dashboard/messages", icon: MessageSquare },
+  // { label: "Messages", path: "/admin/dashboard/messages", icon: MessageSquare },
   { label: "Billing", path: "/admin/dashboard/billing", icon: CreditCard },
   { label: "Analytics", path: "/admin/dashboard/analytics", icon: BarChart },
-  { label: "Settings", path: "/admin/dashboard/settings", icon: Settings },
-  { label: "Support", path: "/admin/dashboard/support", icon: HelpCircle },
+  // { label: "Settings", path: "/admin/dashboard/settings", icon: Settings },
+  // { label: "Support", path: "/admin/dashboard/support", icon: HelpCircle },
 ];
 
 export default function AdminDashboardLayout({ children }) {

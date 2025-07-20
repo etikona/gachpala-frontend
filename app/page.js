@@ -136,6 +136,7 @@ const HomePage = () => {
             <h1 className="heading hero-element text-4xl md:text-6xl lg:text-7xl font-bold mb-6 opacity-0">
               <span className="block">Nurture Your Plants</span>
               <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
+                {/* bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent  */}
                 With AI Intelligence
               </span>
             </h1>

@@ -1,4 +1,3 @@
-// app/products/page.js (Enhanced Products Page)
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,83 +9,10 @@ import {
 } from "@/components/ui/select";
 import { SlidersHorizontal } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import Link from "next/link";
+import products from "@/app/data/products";
 
 export default function ProductsPage() {
-  const products = [
-    {
-      id: 1,
-      name: "Monstera Deliciosa",
-      price: 29.99,
-      category: "Tropical",
-      rating: 4.5,
-      tags: ["Popular", "Low Maintenance"],
-    },
-    {
-      id: 2,
-      name: "Snake Plant Laurentii",
-      price: 24.99,
-      category: "Air Purifying",
-      rating: 4.8,
-      tags: ["Pet Friendly"],
-    },
-    {
-      id: 3,
-      name: "Golden Pothos",
-      price: 18.99,
-      category: "Pet Friendly",
-      rating: 4.3,
-      tags: ["Fast Growing"],
-    },
-    {
-      id: 4,
-      name: "ZZ Plant",
-      price: 34.99,
-      category: "Low Light",
-      rating: 4.6,
-      tags: ["Low Light"],
-    },
-    {
-      id: 5,
-      name: "Fiddle Leaf Fig",
-      price: 49.99,
-      category: "Tropical",
-      rating: 4.2,
-      tags: ["Statement Piece"],
-    },
-    {
-      id: 6,
-      name: "String of Pearls",
-      price: 15.99,
-      category: "Succulents",
-      rating: 4.7,
-      tags: ["Hanging", "Unique"],
-    },
-    {
-      id: 7,
-      name: "Rubber Plant",
-      price: 32.99,
-      category: "Air Purifying",
-      rating: 4.4,
-      tags: ["Low Maintenance"],
-    },
-    {
-      id: 8,
-      name: "Peace Lily",
-      price: 22.99,
-      category: "Flowering",
-      rating: 4.1,
-      tags: ["Air Purifying", "Blooms"],
-    },
-    {
-      id: 9,
-      name: "Bird of Paradise",
-      price: 54.99,
-      category: "Tropical",
-      rating: 4.9,
-      tags: ["Large", "Statement"],
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -187,7 +113,13 @@ export default function ProductsPage() {
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <Link
+              key={product.id}
+              href={`/shop/products/${product.id}`}
+              className="hover:opacity-90 transition-opacity"
+            >
+              <ProductCard product={product} />
+            </Link>
           ))}
         </div>
 

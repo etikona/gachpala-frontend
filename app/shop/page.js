@@ -24,7 +24,7 @@ const ShopLandingPage = () => {
               >
                 Bringing nature indoors
               </Badge>
-              <h1 className="text-4xl md:text-6xl font-serif font-bold text-emerald-900 mb-6 leading-tight">
+              <h1 className="text-4xl md:text-6xl  font-bold text-emerald-900 mb-6 leading-tight">
                 Find Your Perfect{" "}
                 <span className="text-emerald-600">Green Companion</span>
               </h1>
