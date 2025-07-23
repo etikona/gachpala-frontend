@@ -43,82 +43,33 @@ const BlogManagementPage = () => {
   const [activeTab, setActiveTab] = useState("all");
 
   // Mock data for blog posts
+  //  setPosts(mockData);
+  //   setFilteredPosts(mockData);
   useEffect(() => {
-    const mockData = [
-      {
-        id: "1",
-        title: "The Ultimate Guide to Indoor Plant Care",
-        slug: "ultimate-guide-indoor-plant-care",
-        excerpt:
-          "Learn how to keep your indoor plants thriving with these expert tips and tricks.",
-        status: "published",
-        author: "Admin User",
-        date: "2023-10-15",
-        views: 1245,
-        category: "Plant Care",
-        tags: ["indoor plants", "care tips", "beginners"],
-        image: "/assets/blog1.jpg",
-      },
-      {
-        id: "2",
-        title: "10 Rare Tropical Plants You Need in Your Collection",
-        slug: "rare-tropical-plants-collection",
-        excerpt:
-          "Discover exotic tropical plants that will transform your space into a jungle paradise.",
-        status: "published",
-        author: "Admin User",
-        date: "2023-09-28",
-        views: 892,
-        category: "Plant Species",
-        tags: ["tropical", "rare plants", "collection"],
-        image: "/assets/blog2.jpg",
-      },
-      {
-        id: "3",
-        title: "How to Propagate Succulents: A Step-by-Step Guide",
-        slug: "propagate-succulents-guide",
-        excerpt:
-          "Expand your succulent collection with our easy propagation methods for beginners.",
-        status: "draft",
-        author: "Admin User",
-        date: "2023-11-02",
-        views: 0,
-        category: "Gardening Tips",
-        tags: ["succulents", "propagation", "diy"],
-        image: "/assets/blog3.jpg",
-      },
-      {
-        id: "4",
-        title: "The Science of Plant Nutrition: What Your Plants Really Need",
-        slug: "science-plant-nutrition",
-        excerpt:
-          "Understanding the essential nutrients that keep your plants healthy and vibrant.",
-        status: "published",
-        author: "Admin User",
-        date: "2023-08-17",
-        views: 1567,
-        category: "Plant Health",
-        tags: ["nutrition", "science", "plant health"],
-        image: "/assets/blog4.jpg",
-      },
-      {
-        id: "5",
-        title: "Creating a Sustainable Indoor Garden: Eco-Friendly Practices",
-        slug: "sustainable-indoor-garden",
-        excerpt:
-          "How to create an eco-friendly indoor garden that benefits both you and the environment.",
-        status: "draft",
-        author: "Admin User",
-        date: "2023-11-10",
-        views: 0,
-        category: "Sustainable Gardening",
-        tags: ["sustainability", "eco-friendly", "indoor garden"],
-        image: "/assets/blog5.jpg",
-      },
-    ];
+    const fetchBlogs = async () => {
+      try {
+        const res = await fetch(
+          `https://gachpala-server.onrender.com/api/v1/blog`
+        );
 
-    setPosts(mockData);
-    setFilteredPosts(mockData);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("Fetched blogs data:", data);
+
+        // Since API returns an array directly
+        setPosts(data);
+        setFilteredPosts(data);
+      } catch (error) {
+        console.error("Fetch blogs error:", error);
+        setBlogs([]);
+        setFilteredPosts([]);
+      }
+    };
+
+    fetchBlogs();
   }, []);
 
   // Filter posts based on search and tab
@@ -187,7 +138,7 @@ const BlogManagementPage = () => {
 
         <Tabs defaultValue="all" className="w-full">
           <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-            <TabsList className="bg-gray-800 border border-gray-700 rounded-lg p-1">
+            <TabsList className="bg-gray-800 border border-gray-700 text-gray-200 rounded-lg p-1">
               <TabsTrigger value="all" onClick={() => setActiveTab("all")}>
                 All Posts
               </TabsTrigger>
