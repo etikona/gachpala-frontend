@@ -10,11 +10,28 @@ export default function AllBlogsPage() {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    fetch(
-      `https://gachpala-server.onrender.com/api/v1/blog?page=${page}&limit=${PER_PAGE}`
-    )
-      .then((res) => res.json())
-      .then((data) => setBlogs(data.blogs || []));
+    const fetchBlogs = async () => {
+      try {
+        const res = await fetch(
+          `https://gachpala-server.onrender.com/api/v1/blog?page=${page}&limit=${PER_PAGE}`
+        );
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("Fetched blogs data:", data);
+
+        // Since API returns an array directly
+        setBlogs(data || []);
+      } catch (error) {
+        console.error("Fetch blogs error:", error);
+        setBlogs([]);
+      }
+    };
+
+    fetchBlogs();
   }, [page]);
 
   const handlePrev = () => {
@@ -30,26 +47,36 @@ export default function AllBlogsPage() {
       <h1 className="text-3xl font-bold mb-8 text-center">All Blog Posts</h1>
 
       <div className="space-y-8 max-w-5xl mx-auto">
-        {blogs.map((blog) => (
-          <Link key={blog.id} href={`/blogs/${blog.id}`}>
-            <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-gray-900 rounded-lg shadow hover:bg-gray-800 transition">
-              {/* Cover Image */}
-              <img
-                src={blog.imageUrl}
-                alt={blog.title}
-                className="w-full md:w-56 h-40 object-cover rounded"
-              />
+        {blogs.length === 0 ? (
+          <p className="text-center text-gray-400">No blogs found.</p>
+        ) : (
+          blogs.map((blog) => (
+            <Link key={blog.id} href={`/blogs/${blog.slug}`}>
+              <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-gray-900 rounded-lg shadow hover:bg-gray-800 transition">
+                {/* Cover Image */}
+                <img
+                  src={
+                    blog.image.startsWith("/")
+                      ? blog.image
+                      : `/assets/default.jpg`
+                  }
+                  alt={blog.title}
+                  className="w-full md:w-56 h-40 object-cover rounded"
+                />
 
-              {/* Title + Description */}
-              <div className="flex-1 text-left">
-                <h2 className="text-xl font-semibold text-green-400">
-                  {blog.title}
-                </h2>
-                <p className="text-gray-300 mt-2">{blog.description}</p>
+                {/* Title + Excerpt */}
+                <div className="flex-1 text-left">
+                  <h2 className="text-xl font-semibold text-green-400">
+                    {blog.title}
+                  </h2>
+                  <p className="text-gray-300 mt-2">
+                    {blog.excerpt || "No excerpt available."}
+                  </p>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))
+        )}
       </div>
 
       {/* Pagination */}
