@@ -21,29 +21,26 @@ import {
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const BlogEditor = ({ initialPost = null }) => {
   const router = useRouter();
   const [post, setPost] = useState(
     initialPost || {
-      id: "",
       title: "",
       slug: "",
       excerpt: "",
       content: "",
       tags: ["Plant Care", "Gardening"],
-      featuredImage: null,
-      status: "draft",
-      author: "Admin User",
-      date: new Date().toISOString().split("T")[0],
+      image: null,
       category: "Gardening Tips",
+      author: "Admin User",
+      publishDate: new Date().toISOString().split("T")[0],
     }
   );
 
   const [newTag, setNewTag] = useState("");
-  const [imagePreview, setImagePreview] = useState(
-    initialPost?.imageUrl || null
-  );
+  const [imagePreview, setImagePreview] = useState(initialPost?.image || null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef(null);
@@ -65,7 +62,7 @@ const BlogEditor = ({ initialPost = null }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPost((prev) => ({ ...prev, featuredImage: file }));
+      setPost((prev) => ({ ...prev, image: file }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -90,38 +87,89 @@ const BlogEditor = ({ initialPost = null }) => {
     }));
   };
 
-  const handleSubmit = async (e, publish = false) => {
-    e.preventDefault();
-    setIsSaving(true);
+  const createBlogPost = async (postData) => {
+    const formData = new FormData();
 
-    // Set status if publishing
-    const updatedPost = publish ? { ...post, status: "published" } : post;
+    // Append all required fields
+    formData.append("title", postData.title);
+    formData.append("slug", postData.slug);
+    formData.append("excerpt", postData.excerpt);
+    formData.append("content", postData.content);
+    formData.append("category", postData.category);
+    formData.append("author", postData.author);
+    formData.append("publishDate", postData.publishDate);
+
+    // Append tags as comma-separated string
+    formData.append("tags", postData.tags.join(","));
+
+    // Append image if exists
+    if (postData.image) {
+      formData.append("image", postData.image);
+    }
 
     try {
-      // In a real app, you would send to your API here
-      console.log("Saving post:", updatedPost);
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      alert(
-        publish
-          ? "Blog post published successfully!"
-          : "Draft saved successfully!"
+      const response = await fetch(
+        "https://gachpala-server.onrender.com/api/v1/blog",
+        {
+          method: "POST",
+          body: formData,
+          // Headers are not needed for FormData - browser sets automatically
+        }
       );
 
-      // Redirect to blog management after save
-      router.push("/admin/dashboard/blog");
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        // Try to get error message from response
+        const errorMsg =
+          responseData.msg ||
+          responseData.message ||
+          `HTTP error! Status: ${response.status}`;
+        throw new Error(errorMsg);
+      }
+
+      return responseData;
     } catch (error) {
-      console.error("Error saving post:", error);
-      alert("Failed to save post. Please try again.");
-    } finally {
-      setIsSaving(false);
+      console.error("API Error:", error);
+      throw error;
     }
   };
 
-  const handlePublish = (e) => {
-    handleSubmit(e, true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      // Validate required fields
+      if (
+        !post.title ||
+        !post.slug ||
+        !post.content ||
+        !post.category ||
+        !post.author
+      ) {
+        throw new Error("Please fill in all required fields");
+      }
+
+      // Create the blog post
+      const result = await createBlogPost(post);
+
+      toast.success("Blog post published successfully!", {
+        description: "Your content is now live on the platform.",
+      });
+
+      // Redirect to blog management after success
+      setTimeout(() => {
+        router.push("/admin/dashboard/blog");
+      }, 1500);
+    } catch (error) {
+      console.error("Error creating post:", error);
+      toast.error("Failed to publish blog", {
+        description: error.message || "Please check your inputs and try again.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -131,7 +179,7 @@ const BlogEditor = ({ initialPost = null }) => {
           <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
             <BookOpen className="text-emerald-400" />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 to-teal-300">
-              {initialPost ? "Edit Blog Post" : "Create New Blog Post"}
+              Create New Blog Post
             </span>
           </h1>
 
@@ -140,22 +188,42 @@ const BlogEditor = ({ initialPost = null }) => {
               variant="outline"
               className="bg-gray-800 border-gray-700 text-gray-300 hover:text-white"
               onClick={() => setPreviewOpen(true)}
+              disabled={isSaving}
             >
               <Eye className="w-4 h-4 mr-1" /> Preview
             </Button>
             <Button
-              onClick={(e) => handleSubmit(e)}
+              onClick={handleSubmit}
               disabled={isSaving}
               className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 disabled:opacity-70"
             >
-              {isSaving ? "Saving..." : "Save Draft"}
-            </Button>
-            <Button
-              onClick={handlePublish}
-              disabled={isSaving}
-              className="bg-gradient-to-r from-indigo-600 to-purple-500 hover:from-indigo-700 hover:to-purple-600 disabled:opacity-70"
-            >
-              {isSaving ? "Publishing..." : "Publish"}
+              {isSaving ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Publishing...
+                </span>
+              ) : (
+                "Publish Blog"
+              )}
             </Button>
           </div>
         </div>
@@ -171,286 +239,242 @@ const BlogEditor = ({ initialPost = null }) => {
             <TabsTrigger value="tags" className="flex items-center gap-2">
               <Tag className="w-4 h-4" /> Tags & Categories
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" /> Settings
-            </TabsTrigger>
           </TabsList>
 
-          {/* <form onSubmit={handleSubmit}> */}
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <TabsContent value="content" className="mt-0">
-                <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-white">Content</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="title" className="text-gray-300">
-                        Title
-                      </Label>
-                      <Input
-                        id="title"
-                        name="title"
-                        value={post.title}
-                        onChange={handleChange}
-                        placeholder="Enter your blog post title"
-                        className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="slug" className="text-gray-300">
-                        URL Slug
-                      </Label>
-                      <Input
-                        id="slug"
-                        name="slug"
-                        value={post.slug}
-                        onChange={handleChange}
-                        placeholder="your-blog-post-url"
-                        className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="excerpt" className="text-gray-300">
-                        Excerpt
-                      </Label>
-                      <Textarea
-                        id="excerpt"
-                        name="excerpt"
-                        value={post.excerpt}
-                        onChange={handleChange}
-                        placeholder="Brief summary of your post"
-                        className="min-h-[120px] bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="content" className="text-gray-300">
-                        Content
-                      </Label>
-                      <Textarea
-                        id="content"
-                        name="content"
-                        value={post.content}
-                        onChange={handleChange}
-                        placeholder="Write your blog post content here..."
-                        className="min-h-[300px] bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
-                        required
-                      />
-                      <div className="text-xs text-gray-500 mt-2">
-                        Support markdown formatting
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="image" className="mt-0">
-                <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-white">Featured Image</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-700 rounded-xl p-8">
-                      {imagePreview ? (
-                        <div className="relative group">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="max-h-80 rounded-lg object-cover"
-                          />
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => {
-                              setImagePreview(null);
-                              setPost((prev) => ({
-                                ...prev,
-                                featuredImage: null,
-                              }));
-                            }}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <Image className="w-12 h-12 text-gray-500 mb-4" />
-                          <p className="text-gray-400 mb-4 text-center">
-                            Upload a featured image for your blog post
-                          </p>
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageChange}
-                            accept="image/*"
-                            className="hidden"
-                          />
-                          <Button
-                            variant="outline"
-                            className="bg-gray-800 border-gray-700 text-gray-300 hover:text-white"
-                            onClick={() => fileInputRef.current.click()}
-                          >
-                            Select Image
-                          </Button>
-                          <p className="text-xs text-gray-500 mt-4">
-                            Recommended size: 1200x630 pixels
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="tags" className="mt-0">
-                <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-white">
-                      Tags & Categories
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <Label
-                          htmlFor="tags"
-                          className="text-gray-300 mb-2 block"
-                        >
-                          Tags
+          <form onSubmit={handleSubmit}>
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <TabsContent value="content" className="mt-0">
+                  <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="text-white">Content</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="title" className="text-gray-300">
+                          Title *
                         </Label>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {post.tags.map((tag) => (
-                            <Badge
-                              key={tag}
-                              variant="secondary"
-                              className="bg-emerald-900/50 text-emerald-300 border border-emerald-800/50 px-3 py-1 rounded-full flex items-center group"
+                        <Input
+                          id="title"
+                          name="title"
+                          value={post.title}
+                          onChange={handleChange}
+                          placeholder="Enter your blog post title"
+                          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="slug" className="text-gray-300">
+                          URL Slug *
+                        </Label>
+                        <Input
+                          id="slug"
+                          name="slug"
+                          value={post.slug}
+                          onChange={handleChange}
+                          placeholder="your-blog-post-url"
+                          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="excerpt" className="text-gray-300">
+                          Excerpt *
+                        </Label>
+                        <Textarea
+                          id="excerpt"
+                          name="excerpt"
+                          value={post.excerpt}
+                          onChange={handleChange}
+                          placeholder="Brief summary of your post"
+                          className="min-h-[120px] bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="content" className="text-gray-300">
+                          Content *
+                        </Label>
+                        <Textarea
+                          id="content"
+                          name="content"
+                          value={post.content}
+                          onChange={handleChange}
+                          placeholder="Write your blog post content here..."
+                          className="min-h-[300px] bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                          required
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="image" className="mt-0">
+                  <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="text-white">
+                        Featured Image
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-700 rounded-xl p-8">
+                        {imagePreview ? (
+                          <div className="relative group">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="max-h-80 rounded-lg object-cover"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => {
+                                setImagePreview(null);
+                                setPost((prev) => ({
+                                  ...prev,
+                                  image: null,
+                                }));
+                              }}
                             >
-                              {tag}
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveTag(tag)}
-                                className="ml-2 text-emerald-300 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <Image className="w-12 h-12 text-gray-500 mb-4" />
+                            <p className="text-gray-400 mb-4 text-center">
+                              Upload a featured image for your blog post
+                            </p>
+                            <input
+                              type="file"
+                              ref={fileInputRef}
+                              onChange={handleImageChange}
+                              accept="image/*"
+                              className="hidden"
+                              name="image"
+                            />
+                            <Button
+                              variant="outline"
+                              className="bg-gray-800 border-gray-700 text-gray-300 hover:text-white"
+                              onClick={() => fileInputRef.current.click()}
+                              type="button"
+                            >
+                              Select Image
+                            </Button>
+                            <p className="text-xs text-gray-500 mt-4">
+                              Recommended size: 1200x630 pixels
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="tags" className="mt-0">
+                  <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="text-white">
+                        Tags & Categories
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <Label
+                            htmlFor="tags"
+                            className="text-gray-300 mb-2 block"
+                          >
+                            Tags
+                          </Label>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {post.tags.map((tag) => (
+                              <Badge
+                                key={tag}
+                                variant="secondary"
+                                className="bg-emerald-900/50 text-emerald-300 border border-emerald-800/50 px-3 py-1 rounded-full flex items-center group"
                               >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            value={newTag}
-                            onChange={(e) => setNewTag(e.target.value)}
-                            placeholder="Add a new tag"
-                            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="bg-gray-800 border-gray-700 text-gray-300 hover:text-white"
-                            onClick={handleAddTag}
-                          >
-                            <Plus className="w-4 h-4 mr-1" /> Add
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label
-                          htmlFor="category"
-                          className="text-gray-300 mb-2 block"
-                        >
-                          Category
-                        </Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {[
-                            "Gardening Tips",
-                            "Plant Species",
-                            "Indoor Plants",
-                            "Sustainable Gardening",
-                            "Plant Health",
-                            "DIY Projects",
-                          ].map((category) => (
-                            <div
-                              key={category}
-                              className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                                post.category === category
-                                  ? "border-emerald-500 bg-emerald-900/20"
-                                  : "border-gray-700 hover:border-gray-600"
-                              }`}
-                              onClick={() =>
-                                setPost((prev) => ({ ...prev, category }))
-                              }
+                                {tag}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveTag(tag)}
+                                  className="ml-2 text-emerald-300 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            <Input
+                              value={newTag}
+                              onChange={(e) => setNewTag(e.target.value)}
+                              placeholder="Add a new tag"
+                              className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="bg-gray-800 border-gray-700 text-gray-300 hover:text-white"
+                              onClick={handleAddTag}
                             >
-                              <div className="text-gray-300">{category}</div>
-                            </div>
-                          ))}
+                              <Plus className="w-4 h-4 mr-1" /> Add
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label
+                            htmlFor="category"
+                            className="text-gray-300 mb-2 block"
+                          >
+                            Category *
+                          </Label>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {[
+                              "Gardening Tips",
+                              "Plant Species",
+                              "Indoor Plants",
+                              "Sustainable Gardening",
+                              "Plant Health",
+                              "DIY Projects",
+                            ].map((category) => (
+                              <div
+                                key={category}
+                                className={`border rounded-lg p-3 cursor-pointer transition-all ${
+                                  post.category === category
+                                    ? "border-emerald-500 bg-emerald-900/20"
+                                    : "border-gray-700 hover:border-gray-600"
+                                }`}
+                                onClick={() =>
+                                  setPost((prev) => ({ ...prev, category }))
+                                }
+                              >
+                                <div className="text-gray-300">{category}</div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </div>
 
-              <TabsContent value="settings" className="mt-0">
+              <div className="space-y-6">
                 <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
                   <CardHeader>
-                    <CardTitle className="text-white">Post Settings</CardTitle>
+                    <CardTitle className="text-white">Metadata</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-gray-300">
-                        Publication Status
-                      </Label>
-                      <div className="flex gap-4">
-                        <div
-                          className={`flex-1 border rounded-lg p-4 cursor-pointer transition-all ${
-                            post.status === "draft"
-                              ? "border-emerald-500 bg-emerald-900/20"
-                              : "border-gray-700 hover:border-gray-600"
-                          }`}
-                          onClick={() =>
-                            setPost((prev) => ({ ...prev, status: "draft" }))
-                          }
-                        >
-                          <div className="font-medium text-gray-200">Draft</div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            Save as draft without publishing
-                          </div>
-                        </div>
-                        <div
-                          className={`flex-1 border rounded-lg p-4 cursor-pointer transition-all ${
-                            post.status === "published"
-                              ? "border-emerald-500 bg-emerald-900/20"
-                              : "border-gray-700 hover:border-gray-600"
-                          }`}
-                          onClick={() =>
-                            setPost((prev) => ({
-                              ...prev,
-                              status: "published",
-                            }))
-                          }
-                        >
-                          <div className="font-medium text-gray-200">
-                            Published
-                          </div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            Make this post visible to readers
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor="author" className="text-gray-300">
-                        Author
+                        Author *
                       </Label>
                       <Input
                         id="author"
@@ -458,137 +482,106 @@ const BlogEditor = ({ initialPost = null }) => {
                         value={post.author}
                         onChange={handleChange}
                         className="bg-gray-800 border-gray-700 text-white"
+                        required
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="publishDate" className="text-gray-300">
-                        Publish Date
+                        Publish Date *
                       </Label>
                       <Input
                         type="date"
                         id="publishDate"
-                        name="date"
-                        value={post.date}
+                        name="publishDate"
+                        value={post.publishDate}
                         onChange={handleChange}
                         className="bg-gray-800 border-gray-700 text-white"
+                        required
                       />
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
-            </div>
 
-            <div className="space-y-6">
-              <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white">Preview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="rounded-lg aspect-video object-cover"
-                      />
-                    ) : (
-                      <div className="bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg aspect-video flex items-center justify-center">
-                        <Image className="w-12 h-12 text-gray-600" />
+                <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-white">Preview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {imagePreview ? (
+                        <Image
+                          src={imagePreview}
+                          alt="Preview"
+                          className="rounded-lg aspect-video object-cover"
+                        />
+                      ) : (
+                        <div className="bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg aspect-video flex items-center justify-center">
+                          <Image className="w-12 h-12 text-gray-600" />
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-bold text-white">
+                          {post.title || "Your Blog Post Title"}
+                        </h3>
+                        <p className="text-gray-400">
+                          {post.excerpt ||
+                            "Brief excerpt of your blog post will appear here..."}
+                        </p>
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          {post.tags.slice(0, 3).map((tag) => (
+                            <span
+                              key={tag}
+                              className="text-xs text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-white">
+                      SEO Optimization
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="seoTitle" className="text-gray-300">
+                        SEO Title
+                      </Label>
+                      <Input
+                        id="seoTitle"
+                        value={post.title || "Your SEO Title"}
+                        className="bg-gray-800 border-gray-700 text-white"
+                        readOnly
+                      />
+                    </div>
 
                     <div className="space-y-2">
-                      <h3 className="text-xl font-bold text-white">
-                        {post.title || "Your Blog Post Title"}
-                      </h3>
-                      <p className="text-gray-400">
-                        {post.excerpt ||
-                          "Brief excerpt of your blog post will appear here..."}
-                      </p>
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        {post.tags.slice(0, 3).map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-xs text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                      <Label
+                        htmlFor="metaDescription"
+                        className="text-gray-300"
+                      >
+                        Meta Description
+                      </Label>
+                      <Textarea
+                        id="metaDescription"
+                        value={post.excerpt || "Your SEO description..."}
+                        className="min-h-[100px] bg-gray-800 border-gray-700 text-white"
+                        readOnly
+                      />
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white">SEO Optimization</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="seoTitle" className="text-gray-300">
-                      SEO Title
-                    </Label>
-                    <Input
-                      id="seoTitle"
-                      name="seoTitle"
-                      value={post.title || "Your SEO Title"}
-                      onChange={handleChange}
-                      className="bg-gray-800 border-gray-700 text-white"
-                    />
-                    <p className="text-xs text-gray-500">
-                      Recommended: 50-60 characters
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="metaDescription" className="text-gray-300">
-                      Meta Description
-                    </Label>
-                    <Textarea
-                      id="metaDescription"
-                      name="metaDescription"
-                      value={
-                        post.excerpt ||
-                        "Your SEO description will appear here..."
-                      }
-                      onChange={handleChange}
-                      className="min-h-[100px] bg-gray-800 border-gray-700 text-white"
-                    />
-                    <p className="text-xs text-gray-500">
-                      Recommended: 150-160 characters
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gray-800/50 border border-gray-700 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white">Social Sharing</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="text-gray-300">Twitter Card</div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                        <span className="text-emerald-400">Optimized</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-gray-300">Facebook Open Graph</div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                        <span className="text-emerald-400">Optimized</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-          {/* </form> */}
+          </form>
         </Tabs>
       </div>
 
@@ -622,13 +615,14 @@ const BlogEditor = ({ initialPost = null }) => {
                   <div className="flex items-center gap-2">
                     <CalendarDays className="w-4 h-4" />
                     <span>
-                      {post.date || new Date().toISOString().split("T")[0]}
+                      {post.publishDate ||
+                        new Date().toISOString().split("T")[0]}
                     </span>
                   </div>
                 </div>
 
                 {imagePreview ? (
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Featured"
                     className="w-full h-auto rounded-xl mb-8"

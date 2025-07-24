@@ -240,7 +240,7 @@ const BlogManagementPage = () => {
                                   )}
                                 </Button>
                                 <Link
-                                  href={`/admin/dashboard/blog/edit/${post.id}`}
+                                  href={`/admin/dashboard/blogs/edit/${post.id}`}
                                 >
                                   <Button
                                     size="icon"
