@@ -11,9 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
-  Image,
+  Image as ImageIcon,
   Tag,
-  Settings,
   Plus,
   X,
   Eye,
@@ -87,40 +86,42 @@ const BlogEditor = ({ initialPost = null }) => {
     }));
   };
 
-  const createBlogPost = async (postData) => {
+  const saveBlogPost = async () => {
     const formData = new FormData();
 
     // Append all required fields
-    formData.append("title", postData.title);
-    formData.append("slug", postData.slug);
-    formData.append("excerpt", postData.excerpt);
-    formData.append("content", postData.content);
-    formData.append("category", postData.category);
-    formData.append("author", postData.author);
-    formData.append("publishDate", postData.publishDate);
-
-    // Append tags as comma-separated string
-    formData.append("tags", postData.tags.join(","));
+    formData.append("title", post.title);
+    formData.append("slug", post.slug);
+    formData.append("excerpt", post.excerpt);
+    formData.append("content", post.content);
+    formData.append("category", post.category);
+    formData.append("author", post.author);
+    formData.append("publishDate", post.publishDate);
+    formData.append("tags", post.tags.join(","));
 
     // Append image if exists
-    if (postData.image) {
-      formData.append("image", postData.image);
+    if (post.image && typeof post.image !== "string") {
+      formData.append("image", post.image);
     }
 
+    // Add ID if updating existing post
+    if (initialPost && initialPost._id) {
+      formData.append("id", initialPost._id);
+    }
+
+    const url = initialPost?._id
+      ? `https://gachpala-server.onrender.com/api/v1/blog/${initialPost._id}`
+      : "https://gachpala-server.onrender.com/api/v1/blog";
+
     try {
-      const response = await fetch(
-        "https://gachpala-server.onrender.com/api/v1/blog",
-        {
-          method: "POST",
-          body: formData,
-          // Headers are not needed for FormData - browser sets automatically
-        }
-      );
+      const response = await fetch(url, {
+        method: initialPost?._id ? "PUT" : "POST",
+        body: formData,
+      });
 
       const responseData = await response.json();
 
       if (!response.ok) {
-        // Try to get error message from response
         const errorMsg =
           responseData.msg ||
           responseData.message ||
@@ -151,22 +152,33 @@ const BlogEditor = ({ initialPost = null }) => {
         throw new Error("Please fill in all required fields");
       }
 
-      // Create the blog post
-      const result = await createBlogPost(post);
+      // Save the blog post
+      const result = await saveBlogPost();
 
-      toast.success("Blog post published successfully!", {
-        description: "Your content is now live on the platform.",
-      });
+      toast.success(
+        initialPost
+          ? "Blog post updated successfully!"
+          : "Blog post published successfully!",
+        {
+          description: initialPost
+            ? "Your changes have been saved."
+            : "Your content is now live on the platform.",
+        }
+      );
 
       // Redirect to blog management after success
       setTimeout(() => {
         router.push("/admin/dashboard/blog");
       }, 1500);
     } catch (error) {
-      console.error("Error creating post:", error);
-      toast.error("Failed to publish blog", {
-        description: error.message || "Please check your inputs and try again.",
-      });
+      console.error("Error saving post:", error);
+      toast.error(
+        initialPost ? "Failed to update blog" : "Failed to publish blog",
+        {
+          description:
+            error.message || "Please check your inputs and try again.",
+        }
+      );
     } finally {
       setIsSaving(false);
     }
@@ -179,7 +191,7 @@ const BlogEditor = ({ initialPost = null }) => {
           <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
             <BookOpen className="text-emerald-400" />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 to-teal-300">
-              Create New Blog Post
+              {initialPost ? "Edit Blog Post" : "Create New Blog Post"}
             </span>
           </h1>
 
@@ -219,8 +231,10 @@ const BlogEditor = ({ initialPost = null }) => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Publishing...
+                  {initialPost ? "Saving..." : "Publishing..."}
                 </span>
+              ) : initialPost ? (
+                "Update Blog"
               ) : (
                 "Publish Blog"
               )}
@@ -234,7 +248,7 @@ const BlogEditor = ({ initialPost = null }) => {
               <BookOpen className="w-4 h-4" /> Content
             </TabsTrigger>
             <TabsTrigger value="image" className="flex items-center gap-2">
-              <Image className="w-4 h-4" /> Featured Image
+              <ImageIcon className="w-4 h-4" /> Featured Image
             </TabsTrigger>
             <TabsTrigger value="tags" className="flex items-center gap-2">
               <Tag className="w-4 h-4" /> Tags & Categories
@@ -346,7 +360,7 @@ const BlogEditor = ({ initialPost = null }) => {
                           </div>
                         ) : (
                           <>
-                            <Image className="w-12 h-12 text-gray-500 mb-4" />
+                            <ImageIcon className="w-12 h-12 text-gray-500 mb-4" />
                             <p className="text-gray-400 mb-4 text-center">
                               Upload a featured image for your blog post
                             </p>
@@ -510,14 +524,14 @@ const BlogEditor = ({ initialPost = null }) => {
                   <CardContent>
                     <div className="space-y-4">
                       {imagePreview ? (
-                        <Image
+                        <img
                           src={imagePreview}
                           alt="Preview"
                           className="rounded-lg aspect-video object-cover"
                         />
                       ) : (
                         <div className="bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg aspect-video flex items-center justify-center">
-                          <Image className="w-12 h-12 text-gray-600" />
+                          <ImageIcon className="w-12 h-12 text-gray-600" />
                         </div>
                       )}
 
@@ -622,14 +636,14 @@ const BlogEditor = ({ initialPost = null }) => {
                 </div>
 
                 {imagePreview ? (
-                  <Image
+                  <img
                     src={imagePreview}
                     alt="Featured"
                     className="w-full h-auto rounded-xl mb-8"
                   />
                 ) : (
                   <div className="bg-gray-800 border-2 border-dashed border-gray-700 rounded-xl aspect-video flex items-center justify-center mb-8">
-                    <Image className="w-16 h-16 text-gray-600" />
+                    <ImageIcon className="w-16 h-16 text-gray-600" />
                   </div>
                 )}
 
