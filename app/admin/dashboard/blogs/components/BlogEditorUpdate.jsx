@@ -1,7 +1,7 @@
-// app/admin/dashboard/blogs/components/BlogEditor.jsx
+// app/admin/dashboard/blog/components/BlogEditorUpdate.jsx
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,40 +22,57 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-const BlogEditor = ({ initialPost = null }) => {
+const BlogEditorUpdate = ({ blogData }) => {
   const router = useRouter();
-  const [post, setPost] = useState(
-    initialPost || {
-      title: "",
-      slug: "",
-      excerpt: "",
-      content: "",
-      tags: ["Plant Care", "Gardening"],
-      image: null,
-      category: "Gardening Tips",
-      author: "Admin User",
-      publishDate: new Date().toISOString().split("T")[0],
-    }
-  );
+  const [post, setPost] = useState({
+    title: "",
+    slug: "",
+    excerpt: "",
+    content: "",
+    tags: [],
+    image: null,
+    category: "Gardening Tips",
+    author: "Admin User",
+    publishDate: new Date().toISOString().split("T")[0],
+  });
 
+  const [blogId, setBlogId] = useState("");
   const [newTag, setNewTag] = useState("");
-  const [imagePreview, setImagePreview] = useState(initialPost?.image || null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Initialize with blog data
+  useEffect(() => {
+    if (blogData) {
+      if (blogData._id) {
+        setBlogId(blogData._id);
+      }
+
+      setPost({
+        title: blogData.title || "",
+        slug: blogData.slug || "",
+        excerpt: blogData.excerpt || "",
+        content: blogData.content || "",
+        tags: Array.isArray(blogData.tags) ? blogData.tags : [],
+        image: blogData.image || null,
+        category: blogData.category || "Gardening Tips",
+        author: blogData.author || "Admin User",
+        publishDate:
+          blogData.publishDate || new Date().toISOString().split("T")[0],
+      });
+
+      if (blogData.image) {
+        setImagePreview(blogData.image);
+      }
+    }
+  }, [blogData]);
+
+  // Define all handler functions
   const handleChange = (e) => {
     const { name, value } = e.target;
     setPost((prev) => ({ ...prev, [name]: value }));
-
-    // Auto-generate slug from title
-    if (name === "title" && !initialPost) {
-      const slug = value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-      setPost((prev) => ({ ...prev, slug }));
-    }
   };
 
   const handleImageChange = (e) => {
@@ -68,13 +85,15 @@ const BlogEditor = ({ initialPost = null }) => {
       };
       reader.readAsDataURL(file);
     }
-
     e.target.value = "";
   };
 
   const handleAddTag = () => {
     if (newTag.trim() && !post.tags.includes(newTag.trim())) {
-      setPost((prev) => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
+      setPost((prev) => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()],
+      }));
       setNewTag("");
     }
   };
@@ -86,53 +105,71 @@ const BlogEditor = ({ initialPost = null }) => {
     }));
   };
 
-  const saveBlogPost = async () => {
+  const updateBlogPost = async () => {
+    if (!blogId) {
+      throw new Error("Blog ID is missing");
+    }
+
     const formData = new FormData();
+    const formatDate = (dateString) => {
+      return new Date(dateString).toISOString().split("T")[0];
+    };
 
-    // Append all required fields
-    formData.append("title", post.title);
-    formData.append("slug", post.slug);
-    formData.append("excerpt", post.excerpt);
-    formData.append("content", post.content);
-    formData.append("category", post.category);
-    formData.append("author", post.author);
-    formData.append("publishDate", post.publishDate);
-    formData.append("tags", post.tags.join(","));
+    // Append all fields with validation
+    const appendField = (name, value) => {
+      if (value !== undefined && value !== null) {
+        formData.append(name, value);
+      }
+    };
 
-    // Append image if exists
+    // Append required fields
+    appendField("title", post.title);
+    appendField("slug", post.slug);
+    appendField("excerpt", post.excerpt);
+    appendField("content", post.content);
+    appendField("category", post.category);
+    appendField("author", post.author);
+    appendField("publishDate", formatDate(post.publishDate));
+
+    // Handle tags - ensure it's always a string
+    const tagsValue = Array.isArray(post.tags)
+      ? post.tags.filter((tag) => tag.trim()).join(",")
+      : "";
+    appendField("tags", tagsValue);
+
+    // Handle image updates
     if (post.image && typeof post.image !== "string") {
       formData.append("image", post.image);
+    } else if (!post.image) {
+      formData.append("removeImage", "true");
     }
-
-    // Add ID if updating existing post
-    if (initialPost && initialPost._id) {
-      formData.append("id", initialPost._id);
-    }
-
-    const url = initialPost?._id
-      ? `http://localhost:5000/api/v1/blog/${initialPost._id}`
-      : "http://localhost:5000/api/v1/blog";
 
     try {
-      const response = await fetch(url, {
-        method: initialPost?._id ? "PUT" : "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/v1/blog/${blogId}`,
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
 
+      console.log("Update response status:", response.status);
       const responseData = await response.json();
+      console.log("Update response data:", responseData);
 
       if (!response.ok) {
         const errorMsg =
-          responseData.msg ||
-          responseData.message ||
+          responseData?.error?.message ||
+          responseData?.message ||
+          responseData?.msg ||
           `HTTP error! Status: ${response.status}`;
         throw new Error(errorMsg);
       }
 
       return responseData;
     } catch (error) {
-      console.error("API Error:", error);
-      throw error;
+      console.error("API Error details:", error);
+      throw new Error(`Failed to update blog: ${error.message}`);
     }
   };
 
@@ -141,6 +178,11 @@ const BlogEditor = ({ initialPost = null }) => {
     setIsSaving(true);
 
     try {
+      // Validate ID exists
+      if (!blogId) {
+        throw new Error("Blog ID is missing - cannot update");
+      }
+
       // Validate required fields
       if (
         !post.title ||
@@ -152,33 +194,28 @@ const BlogEditor = ({ initialPost = null }) => {
         throw new Error("Please fill in all required fields");
       }
 
-      // Save the blog post
-      const result = await saveBlogPost();
+      // Validate date format
+      if (isNaN(new Date(post.publishDate).getTime())) {
+        throw new Error("Invalid publish date format");
+      }
 
-      toast.success(
-        initialPost
-          ? "Blog post updated successfully!"
-          : "Blog post published successfully!",
-        {
-          description: initialPost
-            ? "Your changes have been saved."
-            : "Your content is now live on the platform.",
-        }
-      );
+      // Update the blog post
+      await updateBlogPost();
+
+      toast.success("Blog post updated successfully!", {
+        description: "Your changes have been saved.",
+      });
 
       // Redirect to blog management after success
       setTimeout(() => {
-        router.push("/admin/dashboard/blog");
+        router.push("/admin/dashboard/blogs");
+        router.refresh();
       }, 1500);
     } catch (error) {
-      console.error("Error saving post:", error);
-      toast.error(
-        initialPost ? "Failed to update blog" : "Failed to publish blog",
-        {
-          description:
-            error.message || "Please check your inputs and try again.",
-        }
-      );
+      console.error("Error updating post:", error);
+      toast.error("Failed to update blog", {
+        description: error.message || "Please check your inputs and try again.",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -191,7 +228,7 @@ const BlogEditor = ({ initialPost = null }) => {
           <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
             <BookOpen className="text-emerald-400" />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 to-teal-300">
-              {initialPost ? "Edit Blog Post" : "Create New Blog Post"}
+              Edit Blog Post
             </span>
           </h1>
 
@@ -205,7 +242,7 @@ const BlogEditor = ({ initialPost = null }) => {
               <Eye className="w-4 h-4 mr-1" /> Preview
             </Button>
             <Button
-              type="submit"
+              onClick={handleSubmit}
               disabled={isSaving}
               className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 disabled:opacity-70"
             >
@@ -231,12 +268,10 @@ const BlogEditor = ({ initialPost = null }) => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  {initialPost ? "Saving..." : "Publishing..."}
+                  Updating...
                 </span>
-              ) : initialPost ? (
-                "Update Blog"
               ) : (
-                "Publish Blog"
+                "Update Blog"
               )}
             </Button>
           </div>
@@ -408,24 +443,20 @@ const BlogEditor = ({ initialPost = null }) => {
                           </Label>
                           <div className="flex flex-wrap gap-2 mb-4">
                             {post.tags.map((tag) => (
-                              <div
+                              <Badge
                                 key={tag}
-                                className="group flex items-center"
+                                variant="secondary"
+                                className="bg-emerald-900/50 text-emerald-300 border border-emerald-800/50 px-3 py-1 rounded-full flex items-center group"
                               >
-                                <Badge
-                                  variant="secondary"
-                                  className="bg-emerald-900/50 text-emerald-300 border border-emerald-800/50 px-3 py-1 rounded-full flex items-center"
+                                {tag}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveTag(tag)}
+                                  className="ml-2 text-emerald-300 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
-                                  {tag}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveTag(tag)}
-                                    className="ml-2 text-emerald-300 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                </Badge>
-                              </div>
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </Badge>
                             ))}
                           </div>
                           <div className="flex gap-2">
@@ -529,11 +560,7 @@ const BlogEditor = ({ initialPost = null }) => {
                     <div className="space-y-4">
                       {imagePreview ? (
                         <img
-                          src={
-                            typeof imagePreview === "string"
-                              ? imagePreview
-                              : URL.createObjectURL(imagePreview)
-                          }
+                          src={imagePreview}
                           alt="Preview"
                           className="rounded-lg aspect-video object-cover"
                         />
@@ -645,11 +672,7 @@ const BlogEditor = ({ initialPost = null }) => {
 
                 {imagePreview ? (
                   <img
-                    src={
-                      typeof imagePreview === "string"
-                        ? imagePreview
-                        : URL.createObjectURL(imagePreview)
-                    }
+                    src={imagePreview}
                     alt="Featured"
                     className="w-full h-auto rounded-xl mb-8"
                   />
@@ -676,7 +699,7 @@ const BlogEditor = ({ initialPost = null }) => {
                 </div>
 
                 <div className="border-t border-gray-800 pt-8">
-                  {post.content.split("\n\n").map((para, i) => (
+                  {(post.content || "").split("\n\n").map((para, i) => (
                     <p key={i} className="mb-4 text-gray-300">
                       {para}
                     </p>
@@ -691,4 +714,4 @@ const BlogEditor = ({ initialPost = null }) => {
   );
 };
 
-export default BlogEditor;
+export default BlogEditorUpdate;
