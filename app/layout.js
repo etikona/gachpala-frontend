@@ -4,7 +4,7 @@ import "./globals.css";
 import Footer from "./shared/Footer";
 import Navbar from "./shared/Navbar";
 import ReduxProvider from "./ReduxProvider";
-
+import { Toaster } from "@/components/ui/sonner";
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -24,6 +24,7 @@ export default function RootLayout({ children }) {
         <ReduxProvider>
           <Navbar />
           {children}
+          {/* <Toaster position="top-right" /> */}
           <Footer />
         </ReduxProvider>
         {/* {children} */}

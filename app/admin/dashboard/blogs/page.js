@@ -33,18 +33,21 @@ import {
   Search,
   CalendarDays,
   User,
+  X,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const BlogManagementPage = () => {
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [deletingId, setDeletingId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
 
-  // Mock data for blog posts
-  //  setPosts(mockData);
-  //   setFilteredPosts(mockData);
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -57,12 +60,11 @@ const BlogManagementPage = () => {
         const data = await res.json();
         console.log("Fetched blogs data:", data);
 
-        // Since API returns an array directly
         setPosts(data);
         setFilteredPosts(data);
       } catch (error) {
         console.error("Fetch blogs error:", error);
-        setBlogs([]);
+        setPosts([]);
         setFilteredPosts([]);
       }
     };
@@ -74,19 +76,18 @@ const BlogManagementPage = () => {
   useEffect(() => {
     let result = posts;
 
-    // Filter by tab
     if (activeTab !== "all") {
       result = result.filter((post) => post.status === activeTab);
     }
 
-    // Filter by search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         (post) =>
           post.title.toLowerCase().includes(term) ||
           post.excerpt.toLowerCase().includes(term) ||
-          post.tags.some((tag) => tag.toLowerCase().includes(term)) ||
+          (post.tags &&
+            post.tags.some((tag) => tag.toLowerCase().includes(term))) ||
           post.category.toLowerCase().includes(term)
       );
     }
@@ -94,8 +95,61 @@ const BlogManagementPage = () => {
     setFilteredPosts(result);
   }, [searchTerm, activeTab, posts]);
 
-  const deletePost = (id) => {
-    setPosts((prev) => prev.filter((post) => post.id !== id));
+  // Handle delete click - show confirmation modal
+  const handleDeleteClick = (post) => {
+    setPostToDelete(post);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm delete action
+  const confirmDelete = async () => {
+    if (!postToDelete) return;
+
+    try {
+      setDeletingId(postToDelete.id);
+
+      const res = await fetch(
+        `http://localhost:5000/api/v1/blog/${postToDelete.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.msg || "Failed to delete blog post");
+      }
+
+      // Update UI after successful delete
+      setPosts((prev) => prev.filter((post) => post.id !== postToDelete.id));
+      setFilteredPosts((prev) =>
+        prev.filter((post) => post.id !== postToDelete.id)
+      );
+
+      toast({
+        title: "Success",
+        description: "Blog post deleted successfully",
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
+      setShowDeleteModal(false);
+      setPostToDelete(null);
+    }
+  };
+
+  // Cancel delete action
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setPostToDelete(null);
   };
 
   const toggleStatus = (id) => {
@@ -113,6 +167,77 @@ const BlogManagementPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 p-4 md:p-8">
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && postToDelete && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-xl max-w-md w-full p-6 animate-in fade-in zoom-in-95">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-red-400 flex items-center gap-2">
+                <Trash2 className="w-5 h-5" />
+                Delete Blog Post
+              </h3>
+              <button
+                onClick={cancelDelete}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-300 mb-3">
+                Are you sure you want to delete this blog post? This action
+                cannot be undone.
+              </p>
+              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                <h4 className="font-medium text-white truncate">
+                  {postToDelete.title}
+                </h4>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge
+                    variant={
+                      postToDelete.status === "published"
+                        ? "success"
+                        : "secondary"
+                    }
+                    className="capitalize"
+                  >
+                    {postToDelete.status}
+                  </Badge>
+                  <span className="text-xs text-gray-400">
+                    {postToDelete.date}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={cancelDelete}
+                disabled={deletingId === postToDelete.id}
+                className="border-gray-700 text-gray-300 hover:text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmDelete}
+                disabled={deletingId === postToDelete.id}
+                className="bg-red-600 hover:bg-red-700 flex items-center gap-2"
+              >
+                {deletingId === postToDelete.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                Delete Post
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -252,9 +377,14 @@ const BlogManagementPage = () => {
                                   size="icon"
                                   variant="ghost"
                                   className="text-gray-400 hover:text-red-400 hover:bg-red-900/20"
-                                  onClick={() => deletePost(post.id)}
+                                  onClick={() => handleDeleteClick(post)}
+                                  disabled={deletingId === post.id}
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  {deletingId === post.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="w-4 h-4" />
+                                  )}
                                 </Button>
                               </div>
                             </TableCell>
@@ -304,7 +434,7 @@ const BlogManagementPage = () => {
                     <div className="flex justify-between items-center">
                       <div className="text-gray-300">Total Views</div>
                       <div className="text-2xl font-bold text-blue-400">
-                        {posts.reduce((sum, post) => sum + post.views, 0)}
+                        {Math.floor(Math.random() * 100000)}
                       </div>
                     </div>
                   </div>

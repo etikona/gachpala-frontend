@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const BlogEditor = ({ initialPost = null }) => {
   const router = useRouter();
@@ -97,7 +98,9 @@ const BlogEditor = ({ initialPost = null }) => {
     formData.append("category", post.category);
     formData.append("author", post.author);
     formData.append("publishDate", post.publishDate);
-    formData.append("tags", post.tags.join(","));
+
+    // Append tags as JSON array
+    formData.append("tags", JSON.stringify(post.tags));
 
     // Append image if exists
     if (post.image && typeof post.image !== "string") {
@@ -119,7 +122,11 @@ const BlogEditor = ({ initialPost = null }) => {
         body: formData,
       });
 
+      // For debugging - log response details
+      console.log("Response status:", response.status);
+
       const responseData = await response.json();
+      console.log("Response data:", responseData);
 
       if (!response.ok) {
         const errorMsg =
@@ -154,6 +161,7 @@ const BlogEditor = ({ initialPost = null }) => {
 
       // Save the blog post
       const result = await saveBlogPost();
+      console.log("API result:", result);
 
       toast.success(
         initialPost
@@ -168,7 +176,7 @@ const BlogEditor = ({ initialPost = null }) => {
 
       // Redirect to blog management after success
       setTimeout(() => {
-        router.push("/admin/dashboard/blog");
+        router.push("/admin/dashboard/blogs");
       }, 1500);
     } catch (error) {
       console.error("Error saving post:", error);
@@ -206,6 +214,7 @@ const BlogEditor = ({ initialPost = null }) => {
             </Button>
             <Button
               type="submit"
+              form="blog-form" // Added form attribute
               disabled={isSaving}
               className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 disabled:opacity-70"
             >
@@ -255,7 +264,8 @@ const BlogEditor = ({ initialPost = null }) => {
             </TabsTrigger>
           </TabsList>
 
-          <form onSubmit={handleSubmit}>
+          {/* Added id to form */}
+          <form id="blog-form" onSubmit={handleSubmit}>
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 <TabsContent value="content" className="mt-0">
@@ -371,6 +381,7 @@ const BlogEditor = ({ initialPost = null }) => {
                               accept="image/*"
                               className="hidden"
                               name="image"
+                              id="image-upload" // Added ID
                             />
                             <Button
                               variant="outline"
@@ -430,6 +441,7 @@ const BlogEditor = ({ initialPost = null }) => {
                           </div>
                           <div className="flex gap-2">
                             <Input
+                              id="new-tag"
                               value={newTag}
                               onChange={(e) => setNewTag(e.target.value)}
                               placeholder="Add a new tag"
