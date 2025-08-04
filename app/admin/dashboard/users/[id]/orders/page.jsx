@@ -1,8 +1,7 @@
-// app/admin/dashboard/users/[userId]/orders/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,10 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowLeft, Loader, Package } from "lucide-react";
 
-export default function OrderHistoryPage({ params }) {
-  console.log(params);
-  const { userId } = params;
-  console.log(userId);
+export default function OrderHistoryPage() {
+  const params = useParams();
+  console.log(params.id);
   const router = useRouter();
 
   const [orders, setOrders] = useState([]);
@@ -31,10 +29,20 @@ export default function OrderHistoryPage({ params }) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
 
+  // Safely extract userId from params
+  const userId = params?.id;
+
   useEffect(() => {
+    if (!userId) {
+      setError("Invalid user ID");
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
 
         // Fetch user info
         const userRes = await fetch(
@@ -62,20 +70,18 @@ export default function OrderHistoryPage({ params }) {
         setTotalPages(ordersData.pagination?.totalPages || 1);
       } catch (err) {
         setError(err.message);
-        toast({
-          title: "Error",
-          description: err.message,
-          variant: "destructive",
-        });
+        toast.error(err.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [userId, currentPage, toast]);
+  }, [userId, currentPage]);
 
   const statusBadge = (status) => {
+    if (!status) return <Badge>Unknown</Badge>;
+
     switch (status.toLowerCase()) {
       case "completed":
         return (
@@ -107,21 +113,26 @@ export default function OrderHistoryPage({ params }) {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!dateString) return "Unknown";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "Invalid date";
+    }
   };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   const handleBack = () => {
@@ -143,14 +154,20 @@ export default function OrderHistoryPage({ params }) {
 
   if (error) {
     return (
-      <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-center">
-        <p className="text-red-400">Error: {error}</p>
-        <Button
-          className="mt-3 bg-red-700 hover:bg-red-600"
-          onClick={() => window.location.reload()}
-        >
-          Try Again
-        </Button>
+      <div className="max-w-md mx-auto bg-red-900/30 border border-red-700 rounded-lg p-6 text-center">
+        <h3 className="text-lg font-medium text-red-400 mb-2">Error</h3>
+        <p className="text-red-300 mb-4">{error}</p>
+        <div className="flex justify-center gap-3">
+          <Button
+            variant="destructive"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </Button>
+          <Button variant="outline" onClick={handleBack}>
+            Back to Profile
+          </Button>
+        </div>
       </div>
     );
   }
