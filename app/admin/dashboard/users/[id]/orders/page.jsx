@@ -18,7 +18,9 @@ import { toast } from "sonner";
 import { ArrowLeft, Loader, Package } from "lucide-react";
 
 export default function OrderHistoryPage({ params }) {
+  console.log(params);
   const { userId } = params;
+  console.log(userId);
   const router = useRouter();
 
   const [orders, setOrders] = useState([]);
