@@ -31,8 +31,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function SellersPage() {
+  const router = useRouter();
   const [stats, setStats] = useState(null);
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -323,7 +325,10 @@ export default function SellersPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+            <Button
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+              onClick={() => router.push(`/admin/dashboard/sellers/add`)}
+            >
               + Add Seller
             </Button>
           </div>
@@ -396,10 +401,24 @@ export default function SellersPage() {
                         align="end"
                         className="bg-gray-800/80 backdrop-blur-md border border-gray-700"
                       >
-                        <DropdownMenuItem className="text-gray-200 hover:bg-gray-700/50 focus:bg-gray-700/50">
+                        <DropdownMenuItem
+                          className="text-gray-200 hover:bg-gray-700/50 focus:bg-gray-700/50"
+                          onClick={() =>
+                            router.push(
+                              `/admin/dashboard/sellers/view/${seller.id}`
+                            )
+                          }
+                        >
                           View Store
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-gray-200 hover:bg-gray-700/50 focus:bg-gray-700/50">
+                        <DropdownMenuItem
+                          className="text-gray-200 hover:bg-gray-700/50 focus:bg-gray-700/50"
+                          onClick={() =>
+                            router.push(
+                              `/admin/dashboard/sellers/edit/${seller.id}`
+                            )
+                          }
+                        >
                           Edit Details
                         </DropdownMenuItem>
 
