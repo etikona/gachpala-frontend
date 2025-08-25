@@ -11,11 +11,44 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Icons } from "@/components/icons";
+import {
+  Upload,
+  BarChart,
+  UploadCloud,
+  Camera,
+  Shield,
+  X,
+  Loader,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  HelpCircle,
+  XCircle,
+  FlaskConical,
+  Calendar,
+  Save,
+  ShoppingCart,
+  Brain,
+  ClipboardCheck,
+} from "lucide-react";
 import Image from "next/image";
+import { toast } from "react-hot-toast";
+
+// API base URL - adjust based on your environment
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+// Custom Progress component to fix indicatorColor issue
+const CustomProgress = ({ value, className }) => {
+  return (
+    <div className={`w-full bg-gray-700 rounded-full h-2 ${className}`}>
+      <div
+        className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+};
 
 export default function PlantHealthPage() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -28,8 +61,15 @@ export default function PlantHealthPage() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+
       setSelectedImage(file);
       setPreviewUrl(URL.createObjectURL(file));
+      setAnalysisResult(null);
     }
   };
 
@@ -37,53 +77,148 @@ export default function PlantHealthPage() {
     fileInputRef.current.click();
   };
 
-  const analyzePlantHealth = () => {
+  const analyzePlantHealth = async () => {
+    if (!selectedImage) {
+      toast.error("Please select an image first");
+      return;
+    }
+
     setIsLoading(true);
     setProgress(0);
+    setAnalysisResult(null);
 
-    // Simulate analysis progress
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsLoading(false);
+    try {
+      // Create form data for the API request
+      const formData = new FormData();
+      formData.append("plant", selectedImage);
 
-          // Set mock analysis results
-          setAnalysisResult({
-            status: "Unhealthy",
-            disease: "Powdery Mildew",
-            confidence: 92,
-            description:
-              "Your plant shows signs of powdery mildew, a fungal disease that appears as white powdery spots on leaves and stems.",
-            careTips: [
-              "Remove affected leaves immediately to prevent spread",
-              "Improve air circulation around the plant",
-              "Avoid overhead watering to keep leaves dry",
-              "Apply neem oil treatment every 7 days",
-            ],
-            fertilizer: {
-              type: "Organic Fungicide",
-              application:
-                "Dilute 1 tsp per liter of water and spray on leaves",
-              frequency: "Every 7 days for 3 weeks",
-            },
-            measurements: {
-              humidity: "High (75%)",
-              light: "Medium (1500 lux)",
-              temp: "22°C (optimal)",
-            },
+      console.log("Sending request to backend...");
+
+      // Start progress animation
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 80) {
+            clearInterval(progressInterval);
+            return 80;
+          }
+          return prev + 5;
+        });
+      }, 200);
+
+      // Try the correct endpoint based on your backend routes
+      // First try the authenticated endpoint, then fallback to test endpoint
+      const endpoints = [
+        `${API_BASE_URL}/api/v1/ai/plant-image-test`,
+        `${API_BASE_URL}/api/v1/ai/plant-image`,
+      ];
+
+      let response;
+      let lastError;
+
+      for (const endpoint of endpoints) {
+        try {
+          console.log("Trying endpoint:", endpoint);
+          response = await fetch(endpoint, {
+            method: "POST",
+            body: formData,
           });
-          return 100;
+
+          if (response.ok) break;
+
+          const errorText = await response.text();
+          console.warn(
+            `Endpoint ${endpoint} failed:`,
+            response.status,
+            errorText
+          );
+          lastError = new Error(
+            `Endpoint ${endpoint} returned ${response.status}`
+          );
+        } catch (error) {
+          console.warn(`Endpoint ${endpoint} error:`, error.message);
+          lastError = error;
+          continue;
         }
-        return prev + 10;
-      });
-    }, 300);
+      }
+
+      clearInterval(progressInterval);
+      setProgress(100);
+
+      if (!response || !response.ok) {
+        throw lastError || new Error("All API endpoints failed");
+      }
+
+      const data = await response.json();
+      console.log("API response data:", data);
+
+      // Handle different response formats
+      if (data.analysis) {
+        setAnalysisResult(data.analysis);
+        toast.success("Plant analysis completed successfully!");
+      } else if (data) {
+        // If the entire response is the analysis data
+        setAnalysisResult(data);
+        toast.success("Plant analysis completed!");
+      } else {
+        throw new Error("Invalid response format from server");
+      }
+    } catch (error) {
+      console.error("Analysis error:", error);
+      toast.error(
+        "Failed to analyze plant image. Please check if the server is running."
+      );
+
+      // Show fallback data for testing
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const resetAnalysis = () => {
     setSelectedImage(null);
     setPreviewUrl("");
     setAnalysisResult(null);
+    setProgress(0);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    if (!status) return <HelpCircle className="h-5 w-5 text-gray-400" />;
+
+    switch (status.toLowerCase()) {
+      case "healthy":
+        return <CheckCircle className="h-5 w-5 text-emerald-400" />;
+      case "unhealthy":
+        return <AlertCircle className="h-5 w-5 text-amber-400" />;
+      case "at risk":
+        return <AlertTriangle className="h-5 w-5 text-orange-400" />;
+      case "error":
+        return <XCircle className="h-5 w-5 text-red-400" />;
+      default:
+        return <HelpCircle className="h-5 w-5 text-gray-400" />;
+    }
+  };
+
+  // Helper function to safely access nested properties
+  const getSafe = (obj, path, defaultValue = "N/A") => {
+    if (!obj) return defaultValue;
+
+    const pathArray = path.split(".");
+    let current = obj;
+
+    for (let i = 0; i < pathArray.length; i++) {
+      if (
+        current[pathArray[i]] === undefined ||
+        current[pathArray[i]] === null
+      ) {
+        return defaultValue;
+      }
+      current = current[pathArray[i]];
+    }
+
+    return current || defaultValue;
   };
 
   return (
@@ -95,7 +230,7 @@ export default function PlantHealthPage() {
           </h1>
           <p className="text-gray-400 max-w-2xl mx-auto">
             Upload a photo of your plant to get instant health analysis, care
-            recommendations, and treatment solutions
+            recommendations, and treatment solutions powered by AI
           </p>
         </div>
 
@@ -104,7 +239,7 @@ export default function PlantHealthPage() {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Icons.upload className="h-5 w-5 text-emerald-400" />
+                <Upload className="h-5 w-5 text-emerald-400" />
                 Upload Plant Photo
               </CardTitle>
               <CardDescription className="text-gray-400">
@@ -115,16 +250,19 @@ export default function PlantHealthPage() {
             <CardContent>
               {previewUrl ? (
                 <div className="relative group">
-                  <Image
-                    src={previewUrl}
-                    alt="Plant preview"
-                    className="rounded-lg w-full h-64 object-cover border border-gray-700"
-                  />
+                  <div className="relative h-64 w-full overflow-hidden rounded-lg border border-gray-700">
+                    <Image
+                      src={previewUrl}
+                      alt="Plant preview"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                   <button
                     onClick={resetAnalysis}
                     className="absolute top-2 right-2 bg-gray-900/80 hover:bg-gray-800 rounded-full p-2 transition-all"
                   >
-                    <Icons.x className="h-5 w-5" />
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
               ) : (
@@ -132,7 +270,7 @@ export default function PlantHealthPage() {
                   className="border-2 border-dashed border-gray-700 rounded-xl h-64 flex flex-col items-center justify-center gap-4 transition-all hover:border-emerald-500 cursor-pointer"
                   onClick={handleUploadClick}
                 >
-                  <Icons.uploadCloud className="h-12 w-12 text-gray-500" />
+                  <UploadCloud className="h-12 w-12 text-gray-500" />
                   <p className="text-gray-500">
                     Click to upload or drag and drop
                   </p>
@@ -145,13 +283,13 @@ export default function PlantHealthPage() {
                 ref={fileInputRef}
                 onChange={handleImageChange}
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
               />
 
               <div className="mt-6 flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <div className="bg-gray-700 rounded-lg p-2">
-                    <Icons.camera className="h-5 w-5 text-emerald-400" />
+                    <Camera className="h-5 w-5 text-emerald-400" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">Photo Tips</p>
@@ -163,12 +301,12 @@ export default function PlantHealthPage() {
 
                 <div className="flex items-center gap-3">
                   <div className="bg-gray-700 rounded-lg p-2">
-                    <Icons.shield className="h-5 w-5 text-emerald-400" />
+                    <Shield className="h-5 w-5 text-emerald-400" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">Privacy First</p>
                     <p className="text-xs text-gray-500">
-                      Your images are never stored or shared
+                      Your images are processed securely and not stored
                     </p>
                   </div>
                 </div>
@@ -179,18 +317,18 @@ export default function PlantHealthPage() {
                   variant="outline"
                   className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
                   onClick={resetAnalysis}
-                  disabled={!selectedImage}
+                  disabled={!selectedImage && !analysisResult}
                 >
-                  Reset
+                  Clear
                 </Button>
                 <Button
-                  className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600"
+                  className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={analyzePlantHealth}
                   disabled={!selectedImage || isLoading}
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">
-                      <Icons.spinner className="h-4 w-4 animate-spin" />
+                      <Loader className="h-4 w-4 animate-spin" />
                       Analyzing...
                     </span>
                   ) : (
@@ -205,13 +343,13 @@ export default function PlantHealthPage() {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Icons.barChart className="h-5 w-5 text-emerald-400" />
+                <BarChart className="h-5 w-5 text-emerald-400" />
                 Analysis Results
               </CardTitle>
               <CardDescription className="text-gray-400">
                 {analysisResult
                   ? "Detailed health assessment and recommendations"
-                  : "Results will appear here after analysis"}
+                  : "Upload a plant photo to see analysis results"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -224,11 +362,7 @@ export default function PlantHealthPage() {
                       </p>
                       <p className="text-sm font-medium">{progress}%</p>
                     </div>
-                    <Progress
-                      value={progress}
-                      className="bg-gray-700 h-2"
-                      indicatorColor="bg-emerald-500"
-                    />
+                    <CustomProgress value={progress} />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 mt-8">
@@ -245,30 +379,45 @@ export default function PlantHealthPage() {
                 <div className="space-y-6">
                   {/* Status Card */}
                   <div
-                    className={`p-4 rounded-lg ${
-                      analysisResult.status === "Healthy"
-                        ? "bg-emerald-900/30 border border-emerald-800"
-                        : "bg-amber-900/30 border border-amber-800"
+                    className={`p-4 rounded-lg border ${
+                      getSafe(analysisResult, "status", "").toLowerCase() ===
+                      "healthy"
+                        ? "bg-emerald-900/30 border-emerald-800"
+                        : getSafe(
+                            analysisResult,
+                            "status",
+                            ""
+                          ).toLowerCase() === "unhealthy"
+                        ? "bg-amber-900/30 border-amber-800"
+                        : getSafe(
+                            analysisResult,
+                            "status",
+                            ""
+                          ).toLowerCase() === "at risk"
+                        ? "bg-orange-900/30 border-orange-800"
+                        : "bg-red-900/30 border-red-800"
                     }`}
                   >
                     <div className="flex justify-between items-center">
                       <div>
                         <h3 className="font-medium flex items-center gap-2">
-                          {analysisResult.status === "Healthy" ? (
-                            <Icons.checkCircle className="h-5 w-5 text-emerald-400" />
-                          ) : (
-                            <Icons.alertCircle className="h-5 w-5 text-amber-400" />
-                          )}
-                          {analysisResult.status}
+                          {getStatusIcon(getSafe(analysisResult, "status"))}
+                          {getSafe(analysisResult, "status", "Unknown Status")}
                         </h3>
                         <p className="text-sm text-gray-400 mt-1">
-                          {analysisResult.status === "Healthy"
-                            ? "Your plant shows no signs of disease"
-                            : `Detected: ${analysisResult.disease}`}
+                          {getSafe(analysisResult, "disease")
+                            ? `Detected: ${getSafe(analysisResult, "disease")}`
+                            : getSafe(
+                                analysisResult,
+                                "status",
+                                ""
+                              ).toLowerCase() === "healthy"
+                            ? "No diseases detected"
+                            : "Disease information not available"}
                         </p>
                       </div>
                       <div className="bg-gray-900 px-3 py-1 rounded-full text-sm font-medium">
-                        {analysisResult.confidence}% confidence
+                        {getSafe(analysisResult, "confidence", 0)}% confidence
                       </div>
                     </div>
                   </div>
@@ -289,7 +438,7 @@ export default function PlantHealthPage() {
                         Care Plan
                       </TabsTrigger>
                       <TabsTrigger
-                        value="fertilizer"
+                        value="treatment"
                         className="data-[state=active]:bg-gray-800"
                       >
                         Treatment
@@ -299,26 +448,42 @@ export default function PlantHealthPage() {
                     <TabsContent value="diagnosis" className="mt-4">
                       <div className="space-y-4">
                         <p className="text-gray-300">
-                          {analysisResult.description}
+                          {getSafe(
+                            analysisResult,
+                            "description",
+                            "No description available."
+                          )}
                         </p>
 
                         <div className="grid grid-cols-3 gap-4 mt-4">
                           <div className="bg-gray-900 rounded-lg p-4">
                             <p className="text-sm text-gray-500">Humidity</p>
                             <p className="font-medium mt-1">
-                              {analysisResult.measurements.humidity}
+                              {getSafe(
+                                analysisResult,
+                                "measurements.humidity",
+                                "N/A"
+                              )}
                             </p>
                           </div>
                           <div className="bg-gray-900 rounded-lg p-4">
                             <p className="text-sm text-gray-500">Light Level</p>
                             <p className="font-medium mt-1">
-                              {analysisResult.measurements.light}
+                              {getSafe(
+                                analysisResult,
+                                "measurements.light",
+                                "N/A"
+                              )}
                             </p>
                           </div>
                           <div className="bg-gray-900 rounded-lg p-4">
                             <p className="text-sm text-gray-500">Temperature</p>
                             <p className="font-medium mt-1">
-                              {analysisResult.measurements.temp}
+                              {getSafe(
+                                analysisResult,
+                                "measurements.temp",
+                                "N/A"
+                              )}
                             </p>
                           </div>
                         </div>
@@ -330,58 +495,88 @@ export default function PlantHealthPage() {
                         <h4 className="font-medium text-emerald-400">
                           Recommended Care Steps
                         </h4>
-                        <ul className="space-y-3">
-                          {analysisResult.careTips.map((tip, index) => (
-                            <li key={index} className="flex items-start gap-3">
-                              <Icons.checkCircle className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-gray-300">{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        {getSafe(analysisResult, "careTips", []).length > 0 ? (
+                          <ul className="space-y-3">
+                            {getSafe(analysisResult, "careTips", []).map(
+                              (tip, index) => (
+                                <li
+                                  key={index}
+                                  className="flex items-start gap-3"
+                                >
+                                  <CheckCircle className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                                  <span className="text-gray-300">{tip}</span>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-400">
+                            No specific care tips available.
+                          </p>
+                        )}
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="fertilizer" className="mt-4">
+                    <TabsContent value="treatment" className="mt-4">
                       <div className="space-y-4">
-                        <div className="flex items-start gap-4">
-                          <div className="bg-emerald-900/20 border border-emerald-800 rounded-lg p-3">
-                            <Icons.droplet className="h-6 w-6 text-emerald-400" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium">
-                              Recommended Fertilizer
-                            </h4>
-                            <p className="text-emerald-400 mt-1">
-                              {analysisResult.fertilizer.type}
-                            </p>
-                            <div className="mt-3 space-y-2">
-                              <div className="flex items-center gap-3">
-                                <Icons.flaskConical className="h-4 w-4 text-gray-500" />
-                                <span className="text-sm text-gray-400">
-                                  {analysisResult.fertilizer.application}
-                                </span>
+                        {getSafe(analysisResult, "fertilizer") ? (
+                          <>
+                            <div className="flex items-start gap-4">
+                              <div className="bg-emerald-900/20 border border-emerald-800 rounded-lg p-3">
+                                <FlaskConical className="h-6 w-6 text-emerald-400" />
                               </div>
-                              <div className="flex items-center gap-3">
-                                <Icons.calendar className="h-4 w-4 text-gray-500" />
-                                <span className="text-sm text-gray-400">
-                                  {analysisResult.fertilizer.frequency}
-                                </span>
+                              <div>
+                                <h4 className="font-medium">
+                                  Recommended Treatment
+                                </h4>
+                                <p className="text-emerald-400 mt-1">
+                                  {getSafe(
+                                    analysisResult,
+                                    "fertilizer.type",
+                                    "Not specified"
+                                  )}
+                                </p>
+                                <div className="mt-3 space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <FlaskConical className="h-4 w-4 text-gray-500" />
+                                    <span className="text-sm text-gray-400">
+                                      {getSafe(
+                                        analysisResult,
+                                        "fertilizer.application",
+                                        "Not specified"
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <Calendar className="h-4 w-4 text-gray-500" />
+                                    <span className="text-sm text-gray-400">
+                                      {getSafe(
+                                        analysisResult,
+                                        "fertilizer.frequency",
+                                        "Not specified"
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </div>
 
-                        <div className="mt-6">
-                          <h4 className="font-medium text-amber-400">
-                            Important Notes
-                          </h4>
-                          <p className="text-gray-400 text-sm mt-2">
-                            Avoid fertilizing during the hottest part of the
-                            day. Early morning or late evening applications are
-                            recommended. Always water your plant before applying
-                            fertilizer to prevent root burn.
+                            <div className="mt-6">
+                              <h4 className="font-medium text-amber-400">
+                                Important Notes
+                              </h4>
+                              <p className="text-gray-400 text-sm mt-2">
+                                Follow the recommended treatment plan carefully.
+                                Monitor your plants progress and adjust care as
+                                needed.
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-gray-400">
+                            No specific treatment recommendations available.
                           </p>
-                        </div>
+                        )}
                       </div>
                     </TabsContent>
                   </Tabs>
@@ -390,26 +585,52 @@ export default function PlantHealthPage() {
                     <Button
                       variant="outline"
                       className="border-gray-700 flex-1"
+                      onClick={() => {
+                        const reportData = JSON.stringify(
+                          analysisResult,
+                          null,
+                          2
+                        );
+                        const blob = new Blob([reportData], {
+                          type: "application/json",
+                        });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `plant-health-report-${
+                          new Date().toISOString().split("T")[0]
+                        }.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast.success("Report downloaded successfully");
+                      }}
                     >
-                      <Icons.save className="h-4 w-4 mr-2" />
+                      <Save className="h-4 w-4 mr-2" />
                       Save Report
                     </Button>
-                    <Button className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 flex-1">
-                      <Icons.shoppingCart className="h-4 w-4 mr-2" />
-                      Buy Recommended Products
+                    <Button
+                      className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 flex-1"
+                      onClick={() =>
+                        toast.info(
+                          "Product recommendations feature coming soon"
+                        )
+                      }
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Recommended Products
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-96 text-center p-8">
                   <div className="bg-gray-900 rounded-full p-4 mb-6">
-                    <Icons.barChart className="h-8 w-8 text-emerald-400" />
+                    <BarChart className="h-8 w-8 text-emerald-400" />
                   </div>
-                  <h3 className="font-medium text-lg mb-2">No Analysis Yet</h3>
+                  <h3 className="font-medium text-lg mb-2">Ready to Analyze</h3>
                   <p className="text-gray-500 max-w-md">
-                    Upload a photo of your plant to get started with the AI
-                    health analysis. Our system will provide detailed insights
-                    into your plants condition.
+                    Upload a clear photo of your plant to receive an AI-powered
+                    health analysis, personalized care recommendations, and
+                    treatment solutions.
                   </p>
                 </div>
               )}
@@ -423,23 +644,19 @@ export default function PlantHealthPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: (
-                  <Icons.uploadCloud className="h-8 w-8 text-emerald-400" />
-                ),
+                icon: <UploadCloud className="h-8 w-8 text-emerald-400" />,
                 title: "Upload Photo",
                 description:
                   "Take a clear picture of your plant focusing on leaves, stems, and soil",
               },
               {
-                icon: <Icons.brain className="h-8 w-8 text-emerald-400" />,
+                icon: <Brain className="h-8 w-8 text-emerald-400" />,
                 title: "AI Analysis",
                 description:
-                  "Our neural network analyzes 120+ plant diseases and nutrient deficiencies",
+                  "Our advanced AI analyzes plant health using cutting-edge technology",
               },
               {
-                icon: (
-                  <Icons.clipboardCheck className="h-8 w-8 text-emerald-400" />
-                ),
+                icon: <ClipboardCheck className="h-8 w-8 text-emerald-400" />,
                 title: "Get Results",
                 description:
                   "Receive detailed diagnosis and personalized care recommendations",
@@ -447,7 +664,7 @@ export default function PlantHealthPage() {
             ].map((feature, index) => (
               <div
                 key={index}
-                className="bg-gray-800 rounded-xl p-6 border border-gray-700"
+                className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-emerald-500 transition-colors"
               >
                 <div className="bg-emerald-900/20 border border-emerald-800 rounded-lg w-12 h-12 flex items-center justify-center mb-4">
                   {feature.icon}
