@@ -24,6 +24,7 @@ import {
   RobotIcon,
   StatsIcon,
 } from "@/components/icons";
+import PlantCareEcosystem from "@/components/PlantCareEcosystem";
 
 // SVG Icon Components
 
@@ -199,66 +200,7 @@ const HomePage = () => {
 
       {/* Features Section */}
       <section id="features" className="py-24 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 animate-section">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Intelligent Plant Care Ecosystem
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Our AI-powered platform provides comprehensive solutions for all
-              your plant care needs
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <RobotIcon className="w-10 h-10" />,
-                title: "AI Disease Detection",
-                description:
-                  "Instant diagnosis of plant diseases with 95% accuracy using computer vision",
-                // image: feature1,
-              },
-              {
-                icon: <StatsIcon className="w-10 h-10" />,
-                title: "Growth Analytics",
-                description:
-                  "Track and optimize plant growth with data-driven insights",
-                // image: feature2,
-              },
-              {
-                icon: <LightbulbIcon className="w-10 h-10" />,
-                title: "Smart Recommendations",
-                description:
-                  "Personalized care plans based on plant species and environment",
-                // image: feature3,
-              },
-            ].map((feature, index) => (
-              <Card
-                key={index}
-                className="feature-card bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 transform hover:-translate-y-2"
-              >
-                <CardHeader className="pb-0">
-                  <div className="mb-4">{feature.icon}</div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-gray-400 mb-4">
-                    {feature.description}
-                  </CardDescription>
-                  <div className="h-48 relative rounded-lg overflow-hidden border border-slate-800">
-                    {/* <Image
-                      src={feature.image}
-                      alt={feature.title}
-                      fill
-                      className="object-cover"
-                    /> */}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <PlantCareEcosystem />
       </section>
 
       {/* How It Works */}
