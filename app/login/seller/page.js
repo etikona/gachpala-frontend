@@ -25,7 +25,7 @@ export default function SellerLogin() {
       }
 
       const response = await fetch(
-        `https://gachpala-server.onrender.com/api/v1/seller/login`,
+        `http://localhost:5000/api/v1/seller/login`,
         {
           method: "POST",
           headers: {
@@ -39,11 +39,11 @@ export default function SellerLogin() {
 
       if (response.ok) {
         // ✅ Set cookie
-        document.cookie = `token=${data.token}; path=/`;
-        document.cookie = `loginType=seller; path=/`;
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("seller", JSON.stringify(data.seller));
 
         // Optional: Save data in localStorage
-        localStorage.setItem("seller", JSON.stringify(data.seller));
+        // localStorage.setItem("seller", JSON.stringify(data.seller));
 
         toast.success("Login successful!");
         router.push("/seller/dashboard");
