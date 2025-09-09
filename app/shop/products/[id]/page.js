@@ -9,6 +9,8 @@ import Rating from "@/components/Rating";
 import { Loader2, ShoppingCart, Heart, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
+import ProductReviews from "@/components/ProductReviews";
+import ReviewForm from "@/components/ReviewForm";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
@@ -25,33 +27,62 @@ const getImageUrl = (imagePath) => {
 };
 
 export default function ProductDetails({ params }) {
+  const [productId, setProductId] = useState(null);
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
 
+  // Extract productId from params when component mounts
+  useEffect(() => {
+    // params is a Promise, so we need to handle it properly
+    const extractProductId = async () => {
+      try {
+        const resolvedParams = await Promise.resolve(params);
+        setProductId(resolvedParams.id);
+      } catch (error) {
+        console.error("Error extracting params:", error);
+        toast.error("Invalid product URL");
+      }
+    };
+
+    extractProductId();
+  }, [params]);
+
+  // Fetch product when productId is available
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!productId) return;
+
       try {
         setIsLoading(true);
-        const response = await fetch(`${API_BASE_URL}/products/${params.id}`);
+        console.log("Fetching product with ID:", productId);
+        console.log("API URL:", `${API_BASE_URL}/products/${productId}`);
+
+        const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+
+        console.log("Response status:", response.status);
+        console.log("Response OK:", response.ok);
 
         if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.log("Error response:", errorData);
           throw new Error("Product not found");
         }
 
         const data = await response.json();
+        console.log("Product data received:", data);
         setProduct(data);
       } catch (error) {
+        console.error("Error details:", error);
         toast.error("Failed to load product");
-        console.error("Error fetching product:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProduct();
-  }, [params.id]);
+  }, [productId]); // Now depends on productId instead of params.id
 
   const handleDecrement = () => {
     if (quantity > 1) {
@@ -120,7 +151,6 @@ export default function ProductDetails({ params }) {
 
   const imageUrl = getImageUrl(product.image);
   const images = imageUrl ? [imageUrl] : [];
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -308,103 +338,15 @@ export default function ProductDetails({ params }) {
         </div>
 
         {/* Reviews Section */}
-        <div className="bg-white rounded-2xl shadow-sm p-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-serif text-emerald-800">
-              Customer Reviews
-            </h2>
-            <div className="flex items-center gap-2">
-              <Rating rating={product.rating || 4.5} />
-              <span className="text-emerald-700">
-                ({product.reviews_count || 12} reviews)
-              </span>
-            </div>
-          </div>
+        <ProductReviews productId={productId} />
 
-          {/* Sample Reviews */}
-          <div className="space-y-6 mb-12">
-            {[
-              {
-                id: 1,
-                user: "Sarah Johnson",
-                date: "2 weeks ago",
-                rating: 5,
-                comment:
-                  "Absolutely love this plant! It arrived in perfect condition and has been thriving in my living room. The care instructions were very helpful.",
-              },
-              {
-                id: 2,
-                user: "Mike Chen",
-                date: "1 month ago",
-                rating: 4,
-                comment:
-                  "Beautiful plant, healthy and well-packaged. Would recommend to any plant lover looking to add some green to their space.",
-              },
-            ].map((review) => (
-              <div
-                key={review.id}
-                className="border-b border-emerald-100 pb-6 last:border-b-0"
-              >
-                <div className="flex justify-between mb-2">
-                  <h4 className="font-medium text-emerald-800">
-                    {review.user}
-                  </h4>
-                  <span className="text-emerald-600 text-sm">
-                    {review.date}
-                  </span>
-                </div>
-                <Rating rating={review.rating} />
-                <p className="mt-3 text-emerald-700">{review.comment}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Review Form */}
-          <div>
-            <h3 className="text-xl font-serif text-emerald-800 mb-6">
-              Share Your Experience
-            </h3>
-            <form className="space-y-6">
-              <div>
-                <label className="block text-emerald-800 mb-2">
-                  Your Rating
-                </label>
-                <Rating editable={true} />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="comment"
-                  className="block text-emerald-800 mb-2"
-                >
-                  Your Review
-                </label>
-                <Textarea
-                  id="comment"
-                  placeholder="Share your experience with this plant..."
-                  className="min-h-[120px] border-emerald-200 focus:border-emerald-400"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  type="text"
-                  placeholder="Your Name"
-                  className="border-emerald-200 focus:border-emerald-400"
-                />
-                <Input
-                  type="email"
-                  placeholder="Your Email"
-                  className="border-emerald-200 focus:border-emerald-400"
-                />
-              </div>
-
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
-                Submit Review
-              </Button>
-            </form>
-          </div>
-        </div>
+        {/* Review Form */}
+        <ReviewForm
+          productId={productId}
+          onReviewSubmitted={() => {
+            console.log("Review submitted - refresh reviews");
+          }}
+        />
       </div>
     </div>
   );
