@@ -14,6 +14,9 @@ import {
   CreditCard,
   Loader2,
   X,
+  Edit,
+  Trash2,
+  Save,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,7 +48,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -55,17 +60,30 @@ export default function OrdersPage() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isNotesEditMode, setIsNotesEditMode] = useState(false);
+  const [notesContent, setNotesContent] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderToDelete, setOrderToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState({
+    key: "created_at",
+    direction: "desc",
+  });
 
   // Fetch orders data
   const fetchOrders = async () => {
     try {
       setLoading(true);
       const res = await fetch("http://localhost:5000/api/v1/orders/admin/all");
+      if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
+      console.log(data);
       setOrders(data);
     } catch (error) {
       toast.error("Failed to fetch orders");
+      console.error("Fetch orders error:", error);
     } finally {
       setLoading(false);
     }
@@ -77,10 +95,12 @@ export default function OrdersPage() {
       const res = await fetch(
         "http://localhost:5000/api/v1/orders/admin/stats"
       );
+      if (!res.ok) throw new Error("Failed to fetch stats");
       const data = await res.json();
       setStats(data);
     } catch (error) {
       toast.error("Failed to fetch stats");
+      console.error("Fetch stats error:", error);
     }
   };
 
@@ -102,8 +122,45 @@ export default function OrdersPage() {
       if (res.ok) {
         toast.success(`Order status updated to ${status}`);
         fetchOrders();
+        fetchStats(); // Refresh stats after status change
       } else {
         throw new Error(data.msg || "Failed to update status");
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  // Update order notes
+  const updateNotes = async (orderId, notes) => {
+    try {
+      setUpdating(orderId);
+      const res = await fetch(
+        `http://localhost:5000/api/v1/orders/admin/${orderId}/notes`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ notes }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Order notes updated successfully");
+        setIsNotesEditMode(false);
+        // Update the selected order with new notes
+        setSelectedOrder((prev) => ({ ...prev, notes: notes }));
+        // Also update the order in the main list
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === orderId ? { ...order, notes: notes } : order
+          )
+        );
+      } else {
+        throw new Error(data.msg || "Failed to update notes");
       }
     } catch (error) {
       toast.error(error.message);
@@ -137,6 +194,33 @@ export default function OrdersPage() {
     }
   };
 
+  // Delete order
+  const deleteOrder = async (orderId) => {
+    try {
+      setUpdating(orderId);
+      const res = await fetch(
+        `http://localhost:5000/api/v1/orders/admin/${orderId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Order deleted successfully");
+        setIsDeleteDialogOpen(false);
+        fetchOrders();
+        fetchStats();
+      } else {
+        throw new Error(data.msg || "Failed to delete order");
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setUpdating(null);
+      setOrderToDelete(null);
+    }
+  };
+
   // View order details
   const viewDetails = async (orderId) => {
     try {
@@ -146,6 +230,7 @@ export default function OrdersPage() {
       const data = await res.json();
       if (res.ok) {
         setSelectedOrder(data);
+        setNotesContent(data.notes || "");
         setIsModalOpen(true);
       } else {
         throw new Error(data.msg || "Failed to fetch details");
@@ -155,30 +240,52 @@ export default function OrdersPage() {
     }
   };
 
-  // Initial data fetch
-  useEffect(() => {
-    fetchOrders();
-    fetchStats();
-  }, []);
+  // Sort orders
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
   // Filter orders based on search and status
   const filteredOrders = orders.filter((order) => {
     // Safely handle search matching
+    const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
-      (typeof order.id === "string" &&
-        order.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (typeof order.customer_name === "string" &&
-        order.customer_name
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())) ||
+      order.id ||
+      (order.customer_name &&
+        order.customer_name.toLowerCase().includes(searchLower)) ||
+      (order.customer_email &&
+        order.customer_email.toLowerCase().includes(searchLower)) ||
       searchQuery === "";
 
-    // Status matching remains the same
+    // Status matching
     const matchesStatus =
       selectedStatus === "all" || order.status === selectedStatus;
 
     return matchesSearch && matchesStatus;
   });
+
+  // Sort filtered orders
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === "asc" ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === "asc" ? 1 : -1;
+    }
+    return 0;
+  });
+
+  // Pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedOrders.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const statusBadge = (status) => {
     switch (status) {
@@ -230,6 +337,12 @@ export default function OrdersPage() {
     }
   };
 
+  // Initial data fetch
+  useEffect(() => {
+    fetchOrders();
+    fetchStats();
+  }, []);
+
   if (loading && orders.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -240,26 +353,33 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Modal Dialog */}
+      {/* Order Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-2xl">
+        <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
-              <span>Order Details</span>
+              <span>Order Details - {selectedOrder?.id}</span>
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setIsNotesEditMode(false);
+                }}
                 className="h-8 w-8"
-              />
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </DialogTitle>
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-semibold">Order Information</h3>
-                  <div className="space-y-2 mt-2">
+                  <h3 className="text-lg font-semibold mb-3">
+                    Order Information
+                  </h3>
+                  <div className="space-y-2">
                     <p>
                       <span className="text-gray-400">Order ID:</span>{" "}
                       {selectedOrder.id}
@@ -274,7 +394,7 @@ export default function OrdersPage() {
                     </p>
                     <p>
                       <span className="text-gray-400">Total:</span> $
-                      {selectedOrder.total}
+                      {selectedOrder.total?.toFixed(2)}
                     </p>
                     <p>
                       <span className="text-gray-400">Payment Method:</span>{" "}
@@ -283,10 +403,10 @@ export default function OrdersPage() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">
+                  <h3 className="text-lg font-semibold mb-3">
                     Customer Information
                   </h3>
-                  <div className="space-y-2 mt-2">
+                  <div className="space-y-2">
                     <p>
                       <span className="text-gray-400">Name:</span>{" "}
                       {selectedOrder.customer_name}
@@ -308,8 +428,8 @@ export default function OrdersPage() {
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold">Order Items</h3>
-                <Table className="mt-2">
+                <h3 className="text-lg font-semibold mb-3">Order Items</h3>
+                <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Product</TableHead>
@@ -319,21 +439,121 @@ export default function OrdersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedOrder.items?.map((item) => (
-                      <TableRow key={`${item.product_id}-${item.quantity}`}>
-                        <TableCell>{item.name}</TableCell>
+                    {selectedOrder.items?.map((item, index) => (
+                      <TableRow key={`${item.product_id}-${index}`}>
+                        <TableCell className="font-medium">
+                          {item.name}
+                        </TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>${item.price}</TableCell>
+                        <TableCell>${item.price?.toFixed(2)}</TableCell>
                         <TableCell className="text-right">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          $
+                          {((item.price || 0) * (item.quantity || 0)).toFixed(
+                            2
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-lg font-semibold">Order Notes</h3>
+                  {!isNotesEditMode ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsNotesEditMode(true)}
+                      className="flex items-center gap-1"
+                    >
+                      <Edit className="h-3 w-3" /> Edit Notes
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsNotesEditMode(false);
+                          setNotesContent(selectedOrder.notes || "");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          updateNotes(selectedOrder.id, notesContent)
+                        }
+                        disabled={updating === selectedOrder.id}
+                        className="flex items-center gap-1"
+                      >
+                        {updating === selectedOrder.id ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Save className="h-3 w-3" />
+                        )}
+                        Save
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {isNotesEditMode ? (
+                  <Textarea
+                    value={notesContent}
+                    onChange={(e) => setNotesContent(e.target.value)}
+                    placeholder="Add order notes..."
+                    className="bg-gray-700 border-gray-600 text-white min-h-32"
+                  />
+                ) : (
+                  <div className="bg-gray-700 p-4 rounded-md min-h-32">
+                    {selectedOrder.notes ? (
+                      <p className="text-gray-200 whitespace-pre-wrap">
+                        {selectedOrder.notes}
+                      </p>
+                    ) : (
+                      <p className="text-gray-400 italic">No notes added</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="bg-gray-800 border-gray-700 text-white">
+          <DialogHeader>
+            <DialogTitle>Confirm Order Deletion</DialogTitle>
+          </DialogHeader>
+          <p>
+            Are you sure you want to delete order {orderToDelete}? This action
+            cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteOrder(orderToDelete)}
+              disabled={updating === orderToDelete}
+            >
+              {updating === orderToDelete ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Delete Order
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -355,7 +575,7 @@ export default function OrdersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {stats?.total_orders || "..."}
+              {stats?.total_orders || "0"}
             </div>
           </CardContent>
         </Card>
@@ -369,7 +589,7 @@ export default function OrdersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {stats?.completed_orders || "..."}
+              {stats?.completed_orders || "0"}
             </div>
           </CardContent>
         </Card>
@@ -383,7 +603,7 @@ export default function OrdersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {stats?.processing_orders || "..."}
+              {stats?.processing_orders || "0"}
             </div>
           </CardContent>
         </Card>
@@ -397,7 +617,7 @@ export default function OrdersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">
-              {stats?.cancelled_orders || "..."}
+              {stats?.cancelled_orders || "0"}
             </div>
           </CardContent>
         </Card>
@@ -412,7 +632,10 @@ export default function OrdersPage() {
               placeholder="Search orders..."
               className="pl-10 bg-gray-800/50 border-gray-700 text-white placeholder-gray-500"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1); // Reset to first page when searching
+              }}
             />
           </div>
 
@@ -445,8 +668,9 @@ export default function OrdersPage() {
             <Button
               variant="outline"
               className="bg-gray-800/50 border-gray-700 text-gray-300 hover:text-white"
+              onClick={() => handleSort("created_at")}
             >
-              Date: Newest
+              Date: {sortConfig.direction === "desc" ? "Newest" : "Oldest"}
               <ArrowUpDown className="h-4 w-4 ml-2" />
             </Button>
           </div>
@@ -471,8 +695,8 @@ export default function OrdersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredOrders.length > 0 ? (
-              filteredOrders.map((order) => (
+            {currentItems.length > 0 ? (
+              currentItems.map((order) => (
                 <TableRow
                   key={order.id}
                   className="border-gray-700 hover:bg-gray-800/50"
@@ -481,7 +705,10 @@ export default function OrdersPage() {
                     {order.id}
                   </TableCell>
                   <TableCell className="text-gray-200">
-                    {order.customer_name}
+                    <div>{order.customer_name}</div>
+                    <div className="text-xs text-gray-400">
+                      {order.customer_email}
+                    </div>
                   </TableCell>
                   <TableCell className="text-gray-400">
                     {new Date(order.created_at).toLocaleDateString()}
@@ -520,7 +747,12 @@ export default function OrdersPage() {
                         <DropdownMenuItem
                           className="text-gray-200 hover:bg-gray-700/50 focus:bg-gray-700/50"
                           onClick={() => updateStatus(order.id, "shipped")}
-                          disabled={updating === order.id}
+                          disabled={
+                            updating === order.id ||
+                            order.status === "shipped" ||
+                            order.status === "completed" ||
+                            order.status === "cancelled"
+                          }
                         >
                           {updating === order.id ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -530,7 +762,11 @@ export default function OrdersPage() {
                         <DropdownMenuItem
                           className="text-gray-200 hover:bg-gray-700/50 focus:bg-gray-700/50"
                           onClick={() => updateStatus(order.id, "completed")}
-                          disabled={updating === order.id}
+                          disabled={
+                            updating === order.id ||
+                            order.status === "completed" ||
+                            order.status === "cancelled"
+                          }
                         >
                           {updating === order.id ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -550,6 +786,21 @@ export default function OrdersPage() {
                           ) : null}
                           Cancel Order
                         </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20"
+                          onClick={() => {
+                            setOrderToDelete(order.id);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                          disabled={updating === order.id}
+                        >
+                          {updating === order.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          ) : (
+                            <Trash2 className="h-4 w-4 mr-2" />
+                          )}
+                          Delete Order
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -561,7 +812,9 @@ export default function OrdersPage() {
                   colSpan={8}
                   className="h-24 text-center text-gray-400"
                 >
-                  No orders found
+                  {orders.length === 0
+                    ? "No orders found"
+                    : "No orders match your search criteria"}
                 </TableCell>
               </TableRow>
             )}
@@ -572,18 +825,38 @@ export default function OrdersPage() {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-400">
-          Showing {filteredOrders.length} of {orders.length} orders
+          Showing {indexOfFirstItem + 1} to{" "}
+          {Math.min(indexOfLastItem, sortedOrders.length)} of{" "}
+          {sortedOrders.length} orders
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             className="bg-gray-800/50 border-gray-700 text-gray-300 hover:text-white"
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
           >
             Previous
           </Button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              className={
+                currentPage === page
+                  ? ""
+                  : "bg-gray-800/50 border-gray-700 text-gray-300 hover:text-white"
+              }
+              onClick={() => paginate(page)}
+            >
+              {page}
+            </Button>
+          ))}
           <Button
             variant="outline"
             className="bg-gray-800/50 border-gray-700 text-gray-300 hover:text-white"
+            onClick={() => paginate(currentPage + 1)}
+            disabled={currentPage === totalPages}
           >
             Next
           </Button>
