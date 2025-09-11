@@ -23,6 +23,7 @@ import {
   Bell,
   HelpCircle,
 } from "lucide-react";
+import PurchaseHistory from "@/components/PurchasesHistory";
 
 export default function PlantCareDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -395,33 +396,7 @@ export default function PlantCareDashboard() {
               </div>
 
               <div className="space-y-4">
-                {purchaseHistory.map((purchase) => (
-                  <div
-                    key={purchase.id}
-                    className="flex justify-between items-center p-4 bg-gray-700/30 border border-gray-600 rounded-xl hover:bg-gray-700/50 transition-colors"
-                  >
-                    <div>
-                      <h4 className="font-medium text-white">
-                        {purchase.item}
-                      </h4>
-                      <p className="text-gray-400 text-sm">{purchase.date}</p>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="font-medium text-white mr-4">
-                        {purchase.amount}
-                      </span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          purchase.status === "Completed"
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : "bg-rose-500/20 text-rose-400"
-                        }`}
-                      >
-                        {purchase.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                <PurchaseHistory />
               </div>
             </div>
           )}
