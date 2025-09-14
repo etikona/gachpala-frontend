@@ -24,58 +24,14 @@ import {
   HelpCircle,
 } from "lucide-react";
 import PurchaseHistory from "@/components/PurchasesHistory";
+import { SubscriptionManager } from "@/components/subscription/SubscriptionManager";
+import { UpgradePlanButton } from "@/components/subscription/UpgradePlanButton";
+import { PremiumUpgradeButton } from "@/components/subscription/PremiumUpgradeButton";
+import { UsageStats } from "@/components/subscription/UsageStats";
 
 export default function PlantCareDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [uploadedImages, setUploadedImages] = useState(5);
-
-  const purchaseHistory = [
-    {
-      id: 1,
-      item: "Premium Fertilizer",
-      date: "2023-11-18",
-      amount: "$24.99",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      item: "Plant Food Supplement",
-      date: "2023-11-10",
-      amount: "$16.50",
-      status: "Completed",
-    },
-    {
-      id: 3,
-      item: "Gardening Tools Set",
-      date: "2023-10-25",
-      amount: "$42.75",
-      status: "Completed",
-    },
-    {
-      id: 4,
-      item: "Organic Pest Control",
-      date: "2023-10-12",
-      amount: "$18.99",
-      status: "Refunded",
-    },
-  ];
-
-  const subscriptions = [
-    {
-      id: 1,
-      name: "AI Health Analysis Pro",
-      date: "2023-12-15",
-      amount: "$9.99/mo",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Plant Care Premium",
-      date: "2023-11-20",
-      amount: "$14.99/mo",
-      status: "Expired",
-    },
-  ];
 
   const recentScans = [
     { id: 1, name: "Monstera Deliciosa", date: "Today", health: "Healthy" },
@@ -87,7 +43,7 @@ export default function PlantCareDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 p-4 md:p-8">
       {/* Top Navigation */}
-      <div className="flex justify-between items-center mb-8">
+      {/* <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">
             PlantCare AI Dashboard
@@ -111,9 +67,9 @@ export default function PlantCareDashboard() {
             <span className="text-white font-medium">Alex J.</span>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 mt-12 gap-6">
         {/* Left Sidebar */}
         <div className="lg:col-span-1 space-y-6">
           {/* User Profile Card */}
@@ -151,14 +107,15 @@ export default function PlantCareDashboard() {
               <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2.5 rounded-xl font-medium mb-3 hover:opacity-90 transition-opacity">
                 Edit Profile
               </button>
-              <button className="w-full bg-gray-700/50 text-emerald-400 py-2.5 rounded-xl font-medium border border-gray-600 hover:bg-gray-600/50 transition-colors">
+              {/* <button className="w-full bg-gray-700/50 text-emerald-400 py-2.5 rounded-xl font-medium border border-gray-600 hover:bg-gray-600/50 transition-colors">
                 Upgrade Plan
-              </button>
+              </button> */}
+              <UpgradePlanButton />
             </div>
           </div>
 
           {/* Storage Card */}
-          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-6 shadow-xl">
+          {/* <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-6 shadow-xl">
             <div className="flex items-center mb-4">
               <Database className="h-5 w-5 text-emerald-400 mr-2" />
               <h3 className="text-lg font-semibold text-white">
@@ -184,10 +141,12 @@ export default function PlantCareDashboard() {
               scans.
             </p>
 
-            <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2.5 rounded-xl font-medium hover:opacity-90 transition-opacity">
+            {/* <button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2.5 rounded-xl font-medium hover:opacity-90 transition-opacity">
               Upgrade to Pro
-            </button>
-          </div>
+            </button> */}
+          <UsageStats />
+
+          {/* </div> */}
 
           {/* Quick Stats */}
           <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-6 shadow-xl">
@@ -403,57 +362,58 @@ export default function PlantCareDashboard() {
 
           {/* Subscriptions Tab */}
           {activeTab === "subscriptions" && (
-            <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-6 shadow-xl">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-white flex items-center">
-                  <RefreshCw className="h-5 w-5 text-emerald-400 mr-2" />
-                  AI Subscriptions
-                </h3>
-                <button className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">
-                  + Add Subscription
-                </button>
-              </div>
+            // <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-6 shadow-xl">
+            //   <div className="flex justify-between items-center mb-6">
+            //     <h3 className="text-lg font-semibold text-white flex items-center">
+            //       <RefreshCw className="h-5 w-5 text-emerald-400 mr-2" />
+            //       AI Subscriptions
+            //     </h3>
+            //     <button className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-2 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">
+            //       + Add Subscription
+            //     </button>
+            //   </div>
 
-              <div className="space-y-4">
-                {subscriptions.map((subscription) => (
-                  <div
-                    key={subscription.id}
-                    className="p-4 bg-gray-700/30 border border-gray-600 rounded-xl hover:bg-gray-700/50 transition-colors"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-medium text-white">
-                        {subscription.name}
-                      </h4>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          subscription.status === "Active"
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : "bg-amber-500/20 text-amber-400"
-                        }`}
-                      >
-                        {subscription.status}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-gray-400 text-sm">
-                      <span>Renews: {subscription.date}</span>
-                      <span className="font-medium">{subscription.amount}</span>
-                    </div>
-                  </div>
-                ))}
+            //   <div className="space-y-4">
+            //     {subscriptions.map((subscription) => (
+            //       <div
+            //         key={subscription.id}
+            //         className="p-4 bg-gray-700/30 border border-gray-600 rounded-xl hover:bg-gray-700/50 transition-colors"
+            //       >
+            //         <div className="flex justify-between items-start mb-3">
+            //           <h4 className="font-medium text-white">
+            //             {subscription.name}
+            //           </h4>
+            //           <span
+            //             className={`px-3 py-1 rounded-full text-xs font-medium ${
+            //               subscription.status === "Active"
+            //                 ? "bg-emerald-500/20 text-emerald-400"
+            //                 : "bg-amber-500/20 text-amber-400"
+            //             }`}
+            //           >
+            //             {subscription.status}
+            //           </span>
+            //         </div>
+            //         <div className="flex justify-between text-gray-400 text-sm">
+            //           <span>Renews: {subscription.date}</span>
+            //           <span className="font-medium">{subscription.amount}</span>
+            //         </div>
+            //       </div>
+            //     ))}
 
-                <div className="p-4 bg-gray-700/30 border border-gray-600 rounded-xl">
-                  <h4 className="font-medium text-white mb-2">Free Tier</h4>
-                  <p className="text-gray-400 text-sm mb-3">
-                    Includes 8 free plant scans per month. AI health reports
-                    with basic care tips.
-                  </p>
-                  <div className="flex justify-between text-gray-400 text-sm">
-                    <span>Scans used: {uploadedImages}/8</span>
-                    <span className="font-medium">Free</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            //     <div className="p-4 bg-gray-700/30 border border-gray-600 rounded-xl">
+            //       <h4 className="font-medium text-white mb-2">Free Tier</h4>
+            //       <p className="text-gray-400 text-sm mb-3">
+            //         Includes 8 free plant scans per month. AI health reports
+            //         with basic care tips.
+            //       </p>
+            //       <div className="flex justify-between text-gray-400 text-sm">
+            //         <span>Scans used: {uploadedImages}/8</span>
+            //         <span className="font-medium">Free</span>
+            //       </div>
+            //     </div>
+            //   </div>
+            // </div>
+            <SubscriptionManager />
           )}
 
           {/* Plant Health Tab */}

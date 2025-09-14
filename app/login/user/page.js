@@ -13,7 +13,7 @@ export default function UserLoginPage() {
 
   const handleUserLogin = async () => {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/login`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
       {
         method: "POST",
         body: JSON.stringify({ email, password }),
@@ -25,10 +25,11 @@ export default function UserLoginPage() {
 
     if (res.ok) {
       // Set cookies for auth token and loginType
-      document.cookie = `token=${data.token}; path=/`;
-      document.cookie = `loginType=user; path=/`;
+      // document.cookie = `token=${data.token}; path=/`;
+      // document.cookie = `loginType=user; path=/`;
 
       // Optional: also store user info in localStorage if needed
+      localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
       router.push("/user/dashboard");
