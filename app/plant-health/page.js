@@ -27,8 +27,7 @@ import {
   XCircle,
   FlaskConical,
   Calendar,
-  Save,
-  ShoppingCart,
+  Download,
   Brain,
   ClipboardCheck,
 } from "lucide-react";
@@ -167,8 +166,6 @@ export default function PlantHealthPage() {
       toast.error(
         "Failed to analyze plant image. Please check if the server is running."
       );
-
-      // Show fallback data for testing
     } finally {
       setIsLoading(false);
     }
@@ -184,6 +181,19 @@ export default function PlantHealthPage() {
     }
   };
 
+  // Helper function to determine plant health status based on confidence
+  const getPlantHealthStatus = (confidence, originalStatus) => {
+    if (!confidence && !originalStatus) return "Unknown";
+
+    // If confidence is available, use it to determine health
+    if (confidence) {
+      return confidence >= 80 ? "Healthy" : "Unhealthy";
+    }
+
+    // Fallback to original status
+    return originalStatus || "Unknown";
+  };
+
   const getStatusIcon = (status) => {
     if (!status) return <HelpCircle className="h-5 w-5 text-gray-400" />;
 
@@ -191,13 +201,29 @@ export default function PlantHealthPage() {
       case "healthy":
         return <CheckCircle className="h-5 w-5 text-emerald-400" />;
       case "unhealthy":
-        return <AlertCircle className="h-5 w-5 text-amber-400" />;
+        return <AlertCircle className="h-5 w-5 text-red-400" />;
       case "at risk":
         return <AlertTriangle className="h-5 w-5 text-orange-400" />;
       case "error":
         return <XCircle className="h-5 w-5 text-red-400" />;
       default:
         return <HelpCircle className="h-5 w-5 text-gray-400" />;
+    }
+  };
+
+  // Helper function to get status card styling based on confidence
+  const getStatusCardStyling = (confidence, status) => {
+    const healthStatus = getPlantHealthStatus(confidence, status);
+
+    switch (healthStatus.toLowerCase()) {
+      case "healthy":
+        return "bg-emerald-900/30 border-emerald-800";
+      case "unhealthy":
+        return "bg-red-900/30 border-red-800";
+      case "at risk":
+        return "bg-orange-900/30 border-orange-800";
+      default:
+        return "bg-gray-900/30 border-gray-800";
     }
   };
 
@@ -219,6 +245,171 @@ export default function PlantHealthPage() {
     }
 
     return current || defaultValue;
+  };
+
+  // PDF Download Function
+  const downloadPDFReport = async () => {
+    if (!analysisResult) {
+      toast.error("No analysis result to download");
+      return;
+    }
+
+    try {
+      // Create PDF content using jsPDF
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+
+      // Get calculated health status
+      const confidence = getSafe(analysisResult, "confidence", 0);
+      const originalStatus = getSafe(analysisResult, "status");
+      const healthStatus = getPlantHealthStatus(confidence, originalStatus);
+
+      // Add title
+      doc.setFontSize(20);
+      doc.setTextColor(34, 197, 94); // Emerald color
+      doc.text("Plant Health Analysis Report", 20, 30);
+
+      // Add date
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 40);
+
+      // Plant identification section
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Plant Identification", 20, 60);
+
+      doc.setFontSize(12);
+      const plantType = getSafe(analysisResult, "plantType", "Unknown Plant");
+      const scientificName = getSafe(analysisResult, "scientificName", "N/A");
+
+      doc.text(`Plant Type: ${plantType}`, 25, 75);
+      doc.text(`Scientific Name: ${scientificName}`, 25, 85);
+      doc.text(`Confidence Score: ${confidence}%`, 25, 95);
+
+      // Health status section
+      doc.setFontSize(16);
+      doc.text("Health Assessment", 20, 115);
+
+      doc.setFontSize(12);
+      // Set color based on health status
+      if (healthStatus.toLowerCase() === "healthy") {
+        doc.setTextColor(34, 197, 94); // Green
+      } else if (healthStatus.toLowerCase() === "unhealthy") {
+        doc.setTextColor(239, 68, 68); // Red
+      } else {
+        doc.setTextColor(249, 115, 22); // Orange
+      }
+
+      doc.text(`Status: ${healthStatus}`, 25, 130);
+
+      doc.setTextColor(0, 0, 0);
+      const disease = getSafe(analysisResult, "disease");
+      if (disease && disease !== "null") {
+        doc.text(`Detected Issue: ${disease}`, 25, 140);
+      } else {
+        doc.text("No diseases detected", 25, 140);
+      }
+
+      // Description
+      const description = getSafe(
+        analysisResult,
+        "description",
+        "No description available"
+      );
+      const splitDescription = doc.splitTextToSize(description, 170);
+      doc.text(splitDescription, 25, 155);
+
+      // Environmental requirements
+      doc.setFontSize(16);
+      doc.text("Environmental Requirements", 20, 190);
+
+      doc.setFontSize(12);
+      const humidity = getSafe(analysisResult, "measurements.humidity", "N/A");
+      const light = getSafe(analysisResult, "measurements.light", "N/A");
+      const temp = getSafe(analysisResult, "measurements.temp", "N/A");
+
+      doc.text(`Humidity: ${humidity}`, 25, 205);
+      doc.text(`Light: ${light}`, 25, 215);
+      doc.text(`Temperature: ${temp}`, 25, 225);
+
+      // Care tips (new page if needed)
+      const careTips = getSafe(analysisResult, "careTips", []);
+      if (careTips.length > 0) {
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text("Care Recommendations", 20, 30);
+
+        doc.setFontSize(12);
+        let yPosition = 45;
+
+        careTips.forEach((tip, index) => {
+          const tipText = `${index + 1}. ${tip}`;
+          const splitTip = doc.splitTextToSize(tipText, 170);
+          doc.text(splitTip, 25, yPosition);
+          yPosition += splitTip.length * 7 + 5;
+
+          // Add new page if content exceeds page height
+          if (yPosition > 270) {
+            doc.addPage();
+            yPosition = 30;
+          }
+        });
+
+        // Fertilizer recommendations
+        const fertilizer = getSafe(analysisResult, "fertilizer");
+        if (fertilizer && typeof fertilizer === "object") {
+          yPosition += 15;
+
+          if (yPosition > 250) {
+            doc.addPage();
+            yPosition = 30;
+          }
+
+          doc.setFontSize(16);
+          doc.text("Fertilizer Recommendations", 20, yPosition);
+          yPosition += 15;
+
+          doc.setFontSize(12);
+          const fertType = getSafe(fertilizer, "type", "N/A");
+          const application = getSafe(fertilizer, "application", "N/A");
+          const frequency = getSafe(fertilizer, "frequency", "N/A");
+
+          doc.text(`Type: ${fertType}`, 25, yPosition);
+          yPosition += 10;
+
+          const splitApplication = doc.splitTextToSize(
+            `Application: ${application}`,
+            170
+          );
+          doc.text(splitApplication, 25, yPosition);
+          yPosition += splitApplication.length * 7 + 5;
+
+          doc.text(`Frequency: ${frequency}`, 25, yPosition);
+        }
+      }
+
+      // Footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Page ${i} of ${pageCount}`, 20, 290);
+        doc.text("Generated by Plant Health AI Analyzer", 150, 290);
+      }
+
+      // Save the PDF
+      const fileName = `plant-health-report-${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
+      doc.save(fileName);
+
+      toast.success("PDF report downloaded successfully!");
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast.error("Failed to generate PDF report");
+    }
   };
 
   return (
@@ -377,43 +568,37 @@ export default function PlantHealthPage() {
                 </div>
               ) : analysisResult ? (
                 <div className="space-y-6">
-                  {/* Status Card */}
+                  {/* Status Card with updated logic */}
                   <div
-                    className={`p-4 rounded-lg border ${
-                      getSafe(analysisResult, "status", "").toLowerCase() ===
-                      "healthy"
-                        ? "bg-emerald-900/30 border-emerald-800"
-                        : getSafe(
-                            analysisResult,
-                            "status",
-                            ""
-                          ).toLowerCase() === "unhealthy"
-                        ? "bg-amber-900/30 border-amber-800"
-                        : getSafe(
-                            analysisResult,
-                            "status",
-                            ""
-                          ).toLowerCase() === "at risk"
-                        ? "bg-orange-900/30 border-orange-800"
-                        : "bg-red-900/30 border-red-800"
-                    }`}
+                    className={`p-4 rounded-lg border ${getStatusCardStyling(
+                      getSafe(analysisResult, "confidence", 0),
+                      getSafe(analysisResult, "status")
+                    )}`}
                   >
                     <div className="flex justify-between items-center">
                       <div>
                         <h3 className="font-medium flex items-center gap-2">
-                          {getStatusIcon(getSafe(analysisResult, "status"))}
-                          {getSafe(analysisResult, "status", "Unknown Status")}
+                          {getStatusIcon(
+                            getPlantHealthStatus(
+                              getSafe(analysisResult, "confidence", 0),
+                              getSafe(analysisResult, "status")
+                            )
+                          )}
+                          {getPlantHealthStatus(
+                            getSafe(analysisResult, "confidence", 0),
+                            getSafe(analysisResult, "status")
+                          )}
                         </h3>
                         <p className="text-sm text-gray-400 mt-1">
-                          {getSafe(analysisResult, "disease")
+                          {getSafe(analysisResult, "disease") &&
+                          getSafe(analysisResult, "disease") !== "null"
                             ? `Detected: ${getSafe(analysisResult, "disease")}`
-                            : getSafe(
-                                analysisResult,
-                                "status",
-                                ""
+                            : getPlantHealthStatus(
+                                getSafe(analysisResult, "confidence", 0),
+                                getSafe(analysisResult, "status")
                               ).toLowerCase() === "healthy"
                             ? "No diseases detected"
-                            : "Disease information not available"}
+                            : "Health assessment complete"}
                         </p>
                       </div>
                       <div className="bg-gray-900 px-3 py-1 rounded-full text-sm font-medium">
@@ -581,43 +766,14 @@ export default function PlantHealthPage() {
                     </TabsContent>
                   </Tabs>
 
-                  <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                  {/* Updated button section - removed shopping cart, improved PDF download */}
+                  <div className="mt-8 flex justify-center">
                     <Button
-                      variant="outline"
-                      className="border-gray-700 flex-1"
-                      onClick={() => {
-                        const reportData = JSON.stringify(
-                          analysisResult,
-                          null,
-                          2
-                        );
-                        const blob = new Blob([reportData], {
-                          type: "application/json",
-                        });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `plant-health-report-${
-                          new Date().toISOString().split("T")[0]
-                        }.json`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        toast.success("Report downloaded successfully");
-                      }}
+                      className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 px-8"
+                      onClick={downloadPDFReport}
                     >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Report
-                    </Button>
-                    <Button
-                      className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 flex-1"
-                      onClick={() =>
-                        toast.info(
-                          "Product recommendations feature coming soon"
-                        )
-                      }
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Recommended Products
+                      <Download className="h-4 w-4 mr-2" />
+                      Download PDF Report
                     </Button>
                   </div>
                 </div>

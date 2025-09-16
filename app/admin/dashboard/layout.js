@@ -29,9 +29,14 @@ const navItems = [
   // Added Blog menu item
   { label: "Blog", path: "/admin/dashboard/blogs", icon: BookOpen },
   { label: "Orders", path: "/admin/dashboard/orders", icon: ShoppingCart },
+  {
+    label: "Subscribers",
+    path: "/admin/dashboard/subscribers",
+    icon: UserCircle,
+  },
   // { label: "Messages", path: "/admin/dashboard/messages", icon: MessageSquare },
-  { label: "Billing", path: "/admin/dashboard/billing", icon: CreditCard },
-  { label: "Analytics", path: "/admin/dashboard/analytics", icon: BarChart },
+  // { label: "Billing", path: "/admin/dashboard/billing", icon: CreditCard },
+  // { label: "Analytics", path: "/admin/dashboard/analytics", icon: BarChart },
   // { label: "Settings", path: "/admin/dashboard/settings", icon: Settings },
   // { label: "Support", path: "/admin/dashboard/support", icon: HelpCircle },
 ];

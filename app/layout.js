@@ -4,7 +4,7 @@ import "./globals.css";
 import Footer from "./shared/Footer";
 import Navbar from "./shared/Navbar";
 import ReduxProvider from "./ReduxProvider";
-import { Toaster } from "sonner";
+// import { Toaster } from "sonner";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
         <ReduxProvider>
           <Navbar />
           {children}
-          <Toaster
+          {/* <Toaster
             position="top-right"
             expand={true} // allows stacking
             richColors
@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
               },
               className: "plant-toast",
             }}
-          />
+          /> */}
           <Footer />
         </ReduxProvider>
         {/* {children} */}
