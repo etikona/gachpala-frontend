@@ -193,7 +193,7 @@ export default function AdminHomePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 my-12 min-h-screen">
       <div>
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-purple-300">
           Dashboard Overview

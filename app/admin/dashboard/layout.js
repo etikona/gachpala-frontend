@@ -88,7 +88,7 @@ export default function AdminDashboardLayout({ children }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-gray-900/80 backdrop-blur-lg border-r border-gray-800 text-white p-5 space-y-8 z-40 transition-transform md:translate-x-0 ${
+        className={`fixed md:sticky top-0 left-0 h-screen my-12 w-64 bg-gray-900/80 backdrop-blur-lg border-r border-gray-800 text-white p-5 space-y-8 z-40 transition-transform md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -148,41 +148,6 @@ export default function AdminDashboardLayout({ children }) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-gray-900/80 backdrop-blur-md border-b border-gray-800 shadow-lg">
-          <div className="px-6 py-3 flex items-center justify-between">
-            <div className="text-lg font-semibold hidden md:block bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-purple-300">
-              {navItems.find((item) => item.path === pathname)?.label ||
-                "Dashboard"}
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative text-gray-300 hover:text-white"
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 bg-red-500 text-white rounded-full h-4 w-4 text-xs flex items-center justify-center">
-                  5
-                </span>
-              </Button>
-
-              <div className="flex items-center space-x-3">
-                <div className="text-right hidden sm:block">
-                  <div className="font-medium text-white">Admin User</div>
-                  <div className="text-xs text-gray-400">admin@example.com</div>
-                </div>
-                <div className="relative">
-                  <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl w-10 h-10 flex items-center justify-center text-white font-bold">
-                    A
-                  </div>
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
 
         {/* Notification Dropdown */}
         {notificationsOpen && (
@@ -242,32 +207,6 @@ export default function AdminDashboardLayout({ children }) {
         </main>
 
         {/* Footer */}
-        <footer className="bg-gray-900/80 backdrop-blur-md border-t border-gray-800 py-3 px-6">
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <div>
-              © {new Date().getFullYear()} Gachpala. All rights reserved.
-            </div>
-            <div className="flex items-center gap-4">
-              <span>v2.1.0</span>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-400 hover:text-white w-8 h-8"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-400 hover:text-white w-8 h-8"
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
   );
