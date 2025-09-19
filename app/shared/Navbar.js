@@ -8,7 +8,8 @@ import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux"; // Added Redux hooks
 import { logout } from "../store/authSlice.js";
-
+import logo from "../../public/assets/icon.png";
+import Image from "next/image.js";
 const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -83,34 +84,6 @@ const Navbar = () => {
   }, [pathname]);
 
   // Leaf icon SVG component
-  const LeafIcon = ({ className }) => (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C16.97 21 21 16.97 21 12C21 7.03 16.97 3 12 3Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M16.5 7.5L7.5 16.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M8 10C8.5 8.5 10 7 12 7C14 7 15.5 8.5 16 10"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
 
   return (
     <header
@@ -126,9 +99,9 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center group">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                <LeafIcon className="w-6 h-6 text-white" />
-              </div>
+              {/*  */}
+              <Image src={logo} alt="Gachpala Logo" className="w-6 h-6" />
+
               <span className="ml-3 text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
                 Gachpala
               </span>
@@ -184,13 +157,13 @@ const Navbar = () => {
                   variant="outline"
                   className="border-gray-700 hover:bg-slate-800 text-white rounded-full px-4 py-2"
                 >
-                  <Link href="/login">Login</Link>
+                  <Link href="/login/user">Login</Link>
                 </Button>
                 <Button
                   asChild
                   className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white rounded-full px-4 py-2 font-medium transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30"
                 >
-                  <Link href="/signup">Sign Up</Link>
+                  <Link href="/register/user">Sign Up</Link>
                 </Button>
               </>
             )}

@@ -1,7 +1,7 @@
 // app/plant-health/page.js
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -35,7 +35,8 @@ import Image from "next/image";
 import { toast } from "react-hot-toast";
 
 // API base URL - adjust based on your environment
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 // Custom Progress component to fix indicatorColor issue
 const CustomProgress = ({ value, className }) => {
@@ -56,6 +57,13 @@ export default function PlantHealthPage() {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
+
+  // Check authentication status
+  const checkAuthStatus = () => {
+    const token =
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    return !!token;
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -82,6 +90,12 @@ export default function PlantHealthPage() {
       return;
     }
 
+    // Check authentication
+    if (!checkAuthStatus()) {
+      toast.error("Please log in to analyze plants");
+      return;
+    }
+
     setIsLoading(true);
     setProgress(0);
     setAnalysisResult(null);
@@ -92,6 +106,11 @@ export default function PlantHealthPage() {
       formData.append("plant", selectedImage);
 
       console.log("Sending request to backend...");
+
+      // Get authentication token
+      const token =
+        localStorage.getItem("authToken") ||
+        sessionStorage.getItem("authToken");
 
       // Start progress animation
       const progressInterval = setInterval(() => {
@@ -104,68 +123,71 @@ export default function PlantHealthPage() {
         });
       }, 200);
 
-      // Try the correct endpoint based on your backend routes
-      // First try the authenticated endpoint, then fallback to test endpoint
-      const endpoints = [
-        `${API_BASE_URL}/api/v1/ai/plant-image-test`,
-        `${API_BASE_URL}/api/v1/ai/plant-image`,
-      ];
-
-      let response;
-      let lastError;
-
-      for (const endpoint of endpoints) {
-        try {
-          console.log("Trying endpoint:", endpoint);
-          response = await fetch(endpoint, {
-            method: "POST",
-            body: formData,
-          });
-
-          if (response.ok) break;
-
-          const errorText = await response.text();
-          console.warn(
-            `Endpoint ${endpoint} failed:`,
-            response.status,
-            errorText
-          );
-          lastError = new Error(
-            `Endpoint ${endpoint} returned ${response.status}`
-          );
-        } catch (error) {
-          console.warn(`Endpoint ${endpoint} error:`, error.message);
-          lastError = error;
-          continue;
-        }
-      }
+      // Use the authenticated endpoint with proper headers
+      const response = await fetch(`${API_BASE_URL}/ai/plant-image`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       clearInterval(progressInterval);
       setProgress(100);
 
-      if (!response || !response.ok) {
-        throw lastError || new Error("All API endpoints failed");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API error:", response.status, errorText);
+
+        if (response.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          // Clear invalid token
+          localStorage.removeItem("authToken");
+          sessionStorage.removeItem("authToken");
+          return;
+        }
+
+        throw new Error(`Server returned ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
       console.log("API response data:", data);
 
-      // Handle different response formats
+      // Handle response format
       if (data.analysis) {
         setAnalysisResult(data.analysis);
-        toast.success("Plant analysis completed successfully!");
+        toast.success("Plant analysis completed and saved successfully!");
       } else if (data) {
-        // If the entire response is the analysis data
         setAnalysisResult(data);
         toast.success("Plant analysis completed!");
       } else {
         throw new Error("Invalid response format from server");
       }
+
+      // Refresh the dashboard data if we're coming from there
+      if (typeof window !== "undefined" && window.parent) {
+        window.parent.postMessage({ type: "ANALYSIS_COMPLETED" }, "*");
+      }
     } catch (error) {
       console.error("Analysis error:", error);
-      toast.error(
-        "Failed to analyze plant image. Please check if the server is running."
-      );
+
+      if (
+        error.message.includes("NetworkError") ||
+        error.message.includes("Failed to fetch")
+      ) {
+        toast.error(
+          "Cannot connect to server. Please check if the backend is running."
+        );
+      } else if (
+        error.message.includes("401") ||
+        error.message.includes("403")
+      ) {
+        toast.error("Authentication failed. Please log in again.");
+        localStorage.removeItem("authToken");
+        sessionStorage.removeItem("authToken");
+      } else {
+        toast.error("Failed to analyze plant image. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -425,6 +447,20 @@ export default function PlantHealthPage() {
           </p>
         </div>
 
+        {/* Authentication warning */}
+        {!checkAuthStatus() && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-8">
+            <p className="font-medium">Authentication Required</p>
+            <p>You need to be logged in to analyze plants and save results.</p>
+            <button
+              onClick={() => (window.location.href = "/login/user")}
+              className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded mt-2"
+            >
+              Go to Login
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upload Section */}
           <Card className="bg-gray-800 border-gray-700">
@@ -515,7 +551,7 @@ export default function PlantHealthPage() {
                 <Button
                   className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={analyzePlantHealth}
-                  disabled={!selectedImage || isLoading}
+                  disabled={!selectedImage || isLoading || !checkAuthStatus()}
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">

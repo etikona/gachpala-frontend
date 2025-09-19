@@ -16,7 +16,7 @@ export function UpgradePlanButton({
       <Button
         variant={variant}
         size={size}
-        className={`w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white ${className}`}
+        className={`bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold shadow-lg hover:shadow-amber-500/25 ${className}`}
       >
         {showIcon && <Crown className="h-4 w-4 mr-2" />}
         {children}
@@ -24,14 +24,3 @@ export function UpgradePlanButton({
     </Link>
   );
 }
-//     <Button
-//       onClick={onClick}
-//       variant={variant}
-//       size={size}
-//       className={`w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white ${className}`}
-//     >
-//       {showIcon && <ArrowUp className="h-4 w-4 mr-2" />}
-//       {children}
-//     </Button>
-//   );
-// }

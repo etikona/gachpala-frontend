@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { PremiumUpgradeButton } from "./PremiumUpgradeButton";
+
 import { Sparkles } from "lucide-react";
+import { UpgradePlanButton } from "./UpgradePlanButton";
 
 export function UsageStats() {
   const [usageData, setUsageData] = useState({
@@ -120,7 +121,7 @@ export function UsageStats() {
 
       {isFreeTier && (
         <div className="space-y-2">
-          <PremiumUpgradeButton className="w-full" />
+          <UpgradePlanButton className="w-full mb-2" />
           <p className="text-xs text-gray-500 text-center">
             Pro: 100 scans/mo • Premium: 1000 scans/mo
           </p>
@@ -129,9 +130,9 @@ export function UsageStats() {
 
       {!isFreeTier && subscription.plan_name === "pro" && (
         <div className="space-y-2">
-          <PremiumUpgradeButton className="w-full" variant="outline">
+          <UpgradePlanButton className="w-full" variant="outline">
             Upgrade to Premium
-          </PremiumUpgradeButton>
+          </UpgradePlanButton>
         </div>
       )}
     </div>
