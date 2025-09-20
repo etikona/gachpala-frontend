@@ -8,19 +8,17 @@ import {
   LayoutDashboard,
   Users,
   ShoppingCart,
-  BarChart,
-  Settings,
   LogOut,
   Package,
   Bell,
   UserCircle,
   Menu,
-  MessageSquare,
-  CreditCard,
-  HelpCircle,
   BookOpen, // Added for Blog icon
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import ReduxProvider from "@/app/ReduxProvider";
+import { logout } from "@/app/store/authSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const navItems = [
   { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
@@ -34,11 +32,6 @@ const navItems = [
     path: "/admin/dashboard/subscribers",
     icon: UserCircle,
   },
-  // { label: "Messages", path: "/admin/dashboard/messages", icon: MessageSquare },
-  // { label: "Billing", path: "/admin/dashboard/billing", icon: CreditCard },
-  // { label: "Analytics", path: "/admin/dashboard/analytics", icon: BarChart },
-  // { label: "Settings", path: "/admin/dashboard/settings", icon: Settings },
-  // { label: "Support", path: "/admin/dashboard/support", icon: HelpCircle },
 ];
 
 export default function AdminDashboardLayout({ children }) {
@@ -47,12 +40,56 @@ export default function AdminDashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRef = useRef(null);
+  const dispatch = useDispatch();
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, loginType } = useSelector((state) => state.auth);
+  const [token, setToken] = useState(null);
+  const handleLogout = async () => {
+    try {
+      if (token) {
+        try {
+          // Try to call the logout API
+          await authAPI.logout(token);
+          toast.success("Logged out successfully");
+        } catch (apiError) {
+          console.warn(
+            "Logout API call failed, but continuing with client-side logout:",
+            apiError
+          );
+          toast.success("Logged out locally");
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected logout error:", error);
+      toast.error("Logout error");
+    } finally {
+      // Always clear client-side data regardless of API success
+      if (typeof window !== "undefined") {
+        // Clear cookies
+        document.cookie = "token=; Max-Age=0; path=/";
+        document.cookie = "loginType=; Max-Age=0; path=/";
 
-  const handleLogout = () => {
-    document.cookie = "token=; Max-Age=0; path=/";
-    document.cookie = "loginType=; Max-Age=0; path=/";
-    localStorage.removeItem("admin");
-    router.push("/login/admin");
+        // Clear localStorage
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("loginType");
+        localStorage.removeItem("admin");
+        localStorage.removeItem("seller");
+      }
+
+      // Clear Redux state
+      dispatch(logout());
+
+      // Reset local token state
+      setToken(null);
+
+      // Close mobile menu
+      setIsOpen(false);
+
+      // Redirect to home
+      router.push("/");
+      router.refresh();
+    }
   };
 
   // Close notifications when clicking outside

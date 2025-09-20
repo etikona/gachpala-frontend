@@ -1,3 +1,4 @@
+// app/login/admin/page.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,9 +9,12 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
+import { setAuth } from "@/app/store/authSlice"; // Import setAuth
 
 export default function AdminLogin() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,10 +51,6 @@ export default function AdminLogin() {
         return;
       }
 
-      // Add timeout to prevent hanging requests
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
       const response = await fetch(
         "http://localhost:5000/api/v1/auth/admin/login",
         {
@@ -59,28 +59,20 @@ export default function AdminLogin() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ email, password }),
-          signal: controller.signal,
         }
       );
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
-      if (data.token) {
-        // ✅ Save to localStorage
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("loginType", "admin");
-
-        // Check if the API returns 'admin' or 'user' property
-        const adminData = data.admin || data.user;
-        if (adminData) {
-          localStorage.setItem("admin", JSON.stringify(adminData));
-        }
+      if (response.ok && data.token) {
+        // Save to Redux store
+        dispatch(
+          setAuth({
+            user: data.admin || data.user,
+            token: data.token,
+            loginType: "admin",
+          })
+        );
 
         toast.success("Login successful!");
         router.push("/admin/dashboard");
@@ -91,55 +83,16 @@ export default function AdminLogin() {
       }
     } catch (error) {
       console.error("Login error:", error);
-
-      if (error.name === "AbortError") {
-        toast.error("Request timeout. Server is taking too long to respond.");
-      } else if (error.message.includes("HTTP error")) {
-        toast.error("Server error. Please try again later.");
-      } else {
-        toast.error(
-          "Network error. Please check your connection and try again."
-        );
-      }
+      toast.error("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Test server connection
-  const testServerConnection = async () => {
-    try {
-      toast.loading("Testing server connection...");
-      const response = await fetch(
-        "https://gachpala-server.onrender.com/api/v1/health",
-        {
-          method: "GET",
-        }
-      );
-
-      if (response.ok) {
-        toast.dismiss();
-        toast.success("Server is online and responsive!");
-      } else {
-        toast.dismiss();
-        toast.error("Server responded with an error");
-      }
-    } catch (error) {
-      toast.dismiss();
-      toast.error("Cannot connect to server. Please try again later.");
-      console.error("Server connection test failed:", error);
-    }
-  };
-
-  // Prevent rendering on server to avoid hydration issues
   if (!isMounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
-        <Card className="bg-gray-800 border-gray-700 shadow-lg w-full max-w-md">
-          <CardContent className="flex justify-center items-center h-64">
-            <p className="text-gray-300">Loading...</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
       </div>
     );
   }
@@ -192,32 +145,7 @@ export default function AdminLogin() {
             >
               {isLoading ? "Logging in..." : "Login as Admin"}
             </Button>
-
-            <div className="text-center text-sm text-gray-400">
-              <p>
-                Forgot your password?{" "}
-                <Link
-                  href="/admin/forgot-password"
-                  className="text-emerald-400 hover:underline"
-                >
-                  Reset it here
-                </Link>
-              </p>
-            </div>
           </form>
-
-          {/* Debug section */}
-          <div className="mt-6 p-3 bg-gray-700 rounded-lg">
-            <p className="text-sm text-gray-300 mb-2">Server Status:</p>
-            <Button
-              onClick={testServerConnection}
-              variant="outline"
-              className="w-full text-xs text-gray-300 border-gray-600"
-              size="sm"
-            >
-              Test Server Connection
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

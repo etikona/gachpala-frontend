@@ -1,3 +1,4 @@
+// app/login/seller/page.js
 "use client";
 
 import { useState } from "react";
@@ -7,9 +8,12 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { setAuth } from "@/app/store/authSlice";
 
 export default function SellerLogin() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,13 +41,15 @@ export default function SellerLogin() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        // ✅ Set cookie
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("seller", JSON.stringify(data.seller));
-
-        // Optional: Save data in localStorage
-        // localStorage.setItem("seller", JSON.stringify(data.seller));
+      if (response.ok && data.token) {
+        // Save to Redux store
+        dispatch(
+          setAuth({
+            user: data.seller,
+            token: data.token,
+            loginType: "seller",
+          })
+        );
 
         toast.success("Login successful!");
         router.push("/seller/dashboard");
@@ -101,19 +107,6 @@ export default function SellerLogin() {
             >
               {isLoading ? "Logging in..." : "Login as Seller"}
             </Button>
-
-            <div className="text-center text-gray-400 text-sm pt-2">
-              <p>
-                Don’t have an account?
-                <button
-                  type="button"
-                  onClick={() => router.push("/register/seller")}
-                  className="text-green-400 hover:text-green-300 ml-1"
-                >
-                  Register here
-                </button>
-              </p>
-            </div>
           </form>
         </CardContent>
       </Card>

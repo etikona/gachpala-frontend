@@ -1,7 +1,7 @@
 // app/seller/layout.jsx
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Package,
   ShoppingCart,
@@ -16,16 +16,69 @@ import {
   User,
   FileText,
   HelpCircle,
+  LogOut, // Added logout icon
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDispatch } from "react-redux";
+import { logout } from "@/app/store/authSlice";
+import { authAPI } from "@/app/services/api";
+import { toast } from "react-hot-toast";
 
 export default function SellerLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   const isActive = (path) => pathname === path;
   const isActiveGroup = (path) => pathname.startsWith(path);
+
+  // Enhanced logout function for seller dashboard
+  const handleLogout = async () => {
+    try {
+      // Get token from localStorage
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        try {
+          // Try to call the logout API
+          await authAPI.logout(token);
+          toast.success("Logged out successfully");
+        } catch (apiError) {
+          console.warn(
+            "Logout API call failed, but continuing with client-side logout:",
+            apiError
+          );
+          toast.success("Logged out locally");
+        }
+      }
+    } catch (error) {
+      console.error("Unexpected logout error:", error);
+      toast.error("Logout error");
+    } finally {
+      // Always clear client-side data regardless of API success
+      if (typeof window !== "undefined") {
+        // Clear cookies
+        document.cookie = "token=; Max-Age=0; path=/";
+        document.cookie = "loginType=; Max-Age=0; path=/";
+
+        // Clear localStorage
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("loginType");
+        localStorage.removeItem("admin");
+        localStorage.removeItem("seller");
+      }
+
+      // Clear Redux state
+      dispatch(logout());
+
+      // Redirect to home
+      router.push("/");
+      router.refresh();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 flex">
@@ -106,6 +159,17 @@ export default function SellerLayout({ children }) {
             </Link>
           </div>
         </nav>
+
+        {/* Logout Button in Sidebar */}
+        <div className="mt-auto pt-4 border-t border-gray-700">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 p-3 rounded-lg text-left text-gray-300 hover:bg-gray-700/50 hover:text-red-400 transition-colors"
+          >
+            <LogOut className="h-5 w-5" />
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -125,6 +189,16 @@ export default function SellerLayout({ children }) {
             <button className="p-2 rounded-full hover:bg-gray-700/50 text-gray-300">
               <Bell className="h-5 w-5" />
             </button>
+
+            {/* Logout Button in Top Bar */}
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-full hover:bg-gray-700/50 text-gray-300 hover:text-red-400 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+
             <div className="flex items-center gap-2">
               <div className="bg-emerald-600 w-8 h-8 rounded-full flex items-center justify-center">
                 <span className="text-white font-medium">S</span>

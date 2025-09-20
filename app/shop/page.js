@@ -286,21 +286,15 @@ const ShopLandingPage = () => {
 
                 {/* Enhanced floating elements */}
                 <div className="floating-element absolute -bottom-8 -left-8 w-32 h-32 bg-slate-800 rounded-3xl border border-slate-700 shadow-xl z-10 flex items-center justify-center group hover:rotate-12 hover:scale-110 hover:bg-slate-700 transition-all duration-300 cursor-pointer">
-                  <div className="bg-emerald-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl group-hover:rotate-[-12deg] transition-transform duration-300">
-                    🌿
-                  </div>
+                  <div className="bg-emerald-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl group-hover:rotate-[-12deg] transition-transform duration-300"></div>
                 </div>
 
                 <div className="floating-element absolute -top-8 -right-8 w-28 h-28 bg-slate-800 rounded-3xl border border-slate-700 shadow-xl z-10 flex items-center justify-center group hover:-rotate-12 hover:scale-110 hover:bg-slate-700 transition-all duration-300 cursor-pointer">
-                  <div className="bg-slate-600 w-14 h-14 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform duration-300">
-                    🏠
-                  </div>
+                  <div className="bg-slate-600 w-14 h-14 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform duration-300"></div>
                 </div>
 
                 <div className="floating-element absolute top-1/2 -right-4 w-24 h-24 bg-slate-800 rounded-3xl border border-slate-700 shadow-xl z-10 flex items-center justify-center group hover:scale-125 hover:bg-slate-700 transition-all duration-300 cursor-pointer">
-                  <div className="bg-amber-600 w-12 h-12 rounded-2xl flex items-center justify-center text-lg group-hover:rotate-180 transition-transform duration-500">
-                    ☀️
-                  </div>
+                  <div className="bg-amber-600 w-12 h-12 rounded-2xl flex items-center justify-center text-lg group-hover:rotate-180 transition-transform duration-500"></div>
                 </div>
               </div>
             </div>
@@ -317,7 +311,7 @@ const ShopLandingPage = () => {
           <div className="flex justify-between items-end mb-16">
             <div className="space-y-4">
               <h2 className="text-4xl font-bold text-white">
-                Featured Collections ✨
+                Featured Collections
               </h2>
               <p className="text-slate-400 max-w-lg text-lg">
                 Curated selections for every space and lifestyle
@@ -327,8 +321,10 @@ const ShopLandingPage = () => {
               variant="ghost"
               className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 p-3 text-lg font-semibold group"
             >
-              View All Collections
-              <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+              <Link href="/shop/products" className="flex items-center">
+                View All Collections
+                <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Link>
             </Button>
           </div>
 
@@ -380,14 +376,12 @@ const ShopLandingPage = () => {
                     <span className="text-sm text-slate-500 font-semibold bg-slate-800/60 px-3 py-1 rounded-full group-hover:bg-slate-700 transition-colors duration-300">
                       {collection.count}
                     </span>
-                    <Button
+                    <div
                       variant="ghost"
                       className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 p-0 h-auto group-hover:underline font-semibold text-lg"
                     >
-                      <Link href="/shop/products">
-                        <ChevronLeft className="ml-2 h-5 w-5" />
-                      </Link>
-                    </Button>
+                      <ChevronLeft className="ml-2 h-5 w-5" />
+                    </div>
                   </div>
                 </div>
 
@@ -417,7 +411,7 @@ const ShopLandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto mb-20">
             <h2 className="text-4xl font-bold text-white mb-6">
-              Why Choose GreenLeaf? 🌟
+              Why Choose GreenLeaf?
             </h2>
             <p className="text-slate-400 text-xl leading-relaxed">
               We're more than just a plant shop - we are your partners in
@@ -475,7 +469,7 @@ const ShopLandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-4xl font-bold text-white mb-6">
-              What Our Plant Parents Say 💚
+              What Our Plant Parents Say
             </h2>
             <p className="text-slate-400 text-xl">
               Join thousands of happy customers who have transformed their
@@ -524,7 +518,7 @@ const ShopLandingPage = () => {
                   </div>
                 </div>
                 <p className="text-slate-300 mb-8 italic text-lg leading-relaxed group-hover:text-slate-200 transition-colors duration-300">
-                  "{testimonial.review}"
+                  {testimonial.review}
                 </p>
                 <div className="flex items-center">
                   <div className="text-3xl mr-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
