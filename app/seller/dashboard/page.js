@@ -35,12 +35,7 @@ export default function SellerDashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
-        <Link href="/seller/products">
-          <Button className="bg-emerald-600 hover:bg-emerald-700 flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add Product
-          </Button>
-        </Link>
+        <Link href="/seller/products"></Link>
       </div>
 
       {/* Stats Grid */}
