@@ -29,13 +29,27 @@ const SubscriptionPage = () => {
   const [plans, setPlans] = useState([]);
   const [currentSubscription, setCurrentSubscription] = useState(null);
   const [subscriptionHistory, setSubscriptionHistory] = useState([]);
-  const [usageData, setUsageData] = useState({ used: 0, remaining: 0 });
+  const [usageData, setUsageData] = useState({
+    used: 0,
+    remaining: 0,
+    totalScans: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     fetchSubscriptionData();
   }, []);
+
+  const getAuthToken = () => {
+    let token = localStorage.getItem("token");
+    try {
+      token = JSON.parse(token);
+    } catch (e) {
+      // keep as is
+    }
+    return token;
+  };
 
   const fetchSubscriptionData = async () => {
     try {
@@ -45,6 +59,7 @@ const SubscriptionPage = () => {
         fetchCurrentSubscription(),
         fetchSubscriptionHistory(),
         checkUsage(),
+        fetchTotalScans(),
       ]);
     } catch (error) {
       console.error("Failed to fetch subscription data:", error);
@@ -56,8 +71,15 @@ const SubscriptionPage = () => {
 
   const fetchPlans = async () => {
     try {
+      const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/plans"
+        "http://localhost:5000/api/v1/subscription/plans",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -73,8 +95,15 @@ const SubscriptionPage = () => {
 
   const fetchCurrentSubscription = async () => {
     try {
+      const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/current"
+        "http://localhost:5000/api/v1/subscription/current",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -87,8 +116,15 @@ const SubscriptionPage = () => {
 
   const fetchSubscriptionHistory = async () => {
     try {
+      const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/history"
+        "http://localhost:5000/api/v1/subscription/history",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -101,33 +137,67 @@ const SubscriptionPage = () => {
 
   const checkUsage = async () => {
     try {
+      const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/check-generation"
+        "http://localhost:5000/api/v1/subscription/check-generation",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
       );
       if (response.ok) {
         const data = await response.json();
-        setUsageData({
+        setUsageData((prev) => ({
+          ...prev,
           used: data.used_generations || 0,
           remaining: data.remaining_generations || 0,
-        });
+        }));
       }
     } catch (error) {
       console.error("Failed to fetch usage data:", error);
     }
   };
 
-  // components/subscription/SubscriptionPage.js (updated handleSubscribe function)
-  // Enhanced subscription handling with better debugging
+  // Fetch total scans from dashboard API
+  const fetchTotalScans = async () => {
+    try {
+      const token = getAuthToken();
+
+      if (!token) {
+        console.log("No token found, skipping total scans fetch");
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/api/v1/ai/dashboard",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data?.summary) {
+          setUsageData((prev) => ({
+            ...prev,
+            totalScans: data.data.summary.totalScans || 0,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch total scans:", error);
+    }
+  };
+
   const handleSubscribe = async (planId) => {
     try {
       setIsProcessing(true);
-
-      let token = localStorage.getItem("token");
-      try {
-        token = JSON.parse(token); // if it was stringified earlier
-      } catch (e) {
-        // keep as is
-      }
+      const token = getAuthToken();
 
       if (!token) {
         toast.error("Please log in to subscribe");
@@ -139,8 +209,6 @@ const SubscriptionPage = () => {
         toast.error("Selected plan not found. Please refresh the page.");
         return;
       }
-
-      console.log("Subscribing to plan:", plan, "Token:", token);
 
       const response = await fetch(
         "http://localhost:5000/api/v1/subscription/subscribe",
@@ -157,12 +225,9 @@ const SubscriptionPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        if (
-          data.message ===
-          "You already have an active subscription to this plan"
-        ) {
+        if (data.message?.includes("already have an active subscription")) {
           toast.info(data.message);
-          return; // stop here, don't throw
+          return;
         }
         throw new Error(
           data.message || `Subscription failed with ${response.status}`
@@ -188,13 +253,7 @@ const SubscriptionPage = () => {
   const handleUpgrade = async (planId) => {
     try {
       setIsProcessing(true);
-
-      let token = localStorage.getItem("token");
-      try {
-        token = JSON.parse(token); // handle case where token was stringified
-      } catch (e) {
-        // keep as-is if plain string
-      }
+      const token = getAuthToken();
 
       if (!token) {
         toast.error("Please log in to upgrade");
@@ -216,22 +275,17 @@ const SubscriptionPage = () => {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || !data.success) {
-        // ✅ duplicate-plan check
-        if (
-          data.message &&
-          data.message.toLowerCase().includes("already have")
-        ) {
+        if (data.message?.toLowerCase().includes("already have")) {
           toast.info(data.message);
-          return; // stop here, don’t throw
+          return;
         }
-
         throw new Error(
           data.message || `Upgrade failed with ${response.status}`
         );
       }
 
       toast.success(data.message || "Plan upgraded successfully!");
-      await fetchSubscriptionData(); // ✅ await refresh
+      await fetchSubscriptionData();
     } catch (error) {
       console.error("Failed to upgrade:", error);
       toast.error(error.message || "Failed to upgrade plan");
@@ -245,18 +299,25 @@ const SubscriptionPage = () => {
 
     try {
       setIsProcessing(true);
+      const token = getAuthToken();
+
       const response = await fetch(
         "http://localhost:5000/api/v1/subscription/cancel",
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
         }
       );
 
       if (response.ok) {
         toast.success("Subscription cancelled successfully");
-        fetchSubscriptionData(); // Refresh data
+        await fetchSubscriptionData();
       } else {
-        throw new Error("Cancellation failed");
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || "Cancellation failed");
       }
     } catch (error) {
       console.error("Failed to cancel subscription:", error);
@@ -268,12 +329,14 @@ const SubscriptionPage = () => {
 
   const trackImage = async (imageData) => {
     try {
+      const token = getAuthToken();
       const response = await fetch(
         "http://localhost:5000/api/v1/subscription/track-image",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
           },
           body: JSON.stringify({ image_data: imageData }),
         }
@@ -466,7 +529,7 @@ const SubscriptionPage = () => {
                 Usage Statistics
               </CardTitle>
               <CardDescription className="text-gray-400">
-                Your monthly generation usage
+                Your monthly scan usage
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -478,31 +541,40 @@ const SubscriptionPage = () => {
                       width: `${
                         (usageData.used /
                           (usageData.used + usageData.remaining)) *
-                        100
+                          100 || 0
                       }%`,
                     }}
                   ></div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <p className="text-sm text-gray-400">Used</p>
-                    <p className="text-xl font-bold">{usageData.used} scans</p>
+                    <p className="text-sm text-gray-400">Plan Used</p>
+                    <p className="text-xl font-bold">{usageData.used}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Remaining</p>
-                    <p className="text-xl font-bold">
-                      {usageData.remaining} scans
+                    <p className="text-xl font-bold">{usageData.remaining}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Total Scans</p>
+                    <p className="text-xl font-bold text-emerald-400">
+                      {usageData.totalScans}
                     </p>
                   </div>
                 </div>
 
                 <Button
-                  onClick={checkUsage}
+                  onClick={fetchSubscriptionData}
                   variant="outline"
                   className="w-full border-gray-600"
+                  disabled={isLoading}
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" />
+                  <RefreshCw
+                    className={`h-4 w-4 mr-2 ${
+                      isLoading ? "animate-spin" : ""
+                    }`}
+                  />
                   Refresh Usage
                 </Button>
               </div>

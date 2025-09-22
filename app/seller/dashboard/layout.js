@@ -81,18 +81,11 @@ export default function SellerLayout({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 flex">
+    <div className="min-h-screen  bg-gradient-to-br from-gray-900 to-gray-950 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-gray-800/50 backdrop-blur-lg border-r border-gray-700 p-4 flex flex-col">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="bg-emerald-600 w-10 h-10 rounded-lg flex items-center justify-center">
-            <Leaf className="h-6 w-6 text-white" />
-          </div>
-          <h1 className="text-xl font-bold text-white">PlantCare AI</h1>
-        </div>
-
+      <div className="w-64  bg-gray-800/50 backdrop-blur-lg border-r border-gray-700 p-4 flex flex-col">
         <nav className="flex-1">
-          <div className="space-y-1">
+          <div className="space-y-1 mt-12">
             <Link href="/seller/dashboard">
               <div
                 className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
@@ -165,7 +158,8 @@ export default function SellerLayout({ children }) {
           <button
             onClick={handleLogout}
             variant="destructive"
-            className="w-full flex items-center p-1 rounded text-center  bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800"
+            className="w-full flex items-center p-1
+             rounded text-center  bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800"
           >
             <LogOut className="h-4 w-4 mr-2" />
             <span>Logout</span>
@@ -174,47 +168,6 @@ export default function SellerLayout({ children }) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <header className="bg-gray-800/50 backdrop-blur-lg border-b border-gray-700 p-4 flex justify-between items-center">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search..."
-              className="pl-10 bg-gray-700/50 border-gray-600 text-white w-80"
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button className="p-2 rounded-full hover:bg-gray-700/50 text-gray-300">
-              <Bell className="h-5 w-5" />
-            </button>
-
-            {/* Logout Button in Top Bar */}
-            <button
-              onClick={handleLogout}
-              className="p-2 rounded-full hover:bg-gray-700/50 text-gray-300 hover:text-red-400 transition-colors"
-              title="Logout"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-
-            <div className="flex items-center gap-2">
-              <div className="bg-emerald-600 w-8 h-8 rounded-full flex items-center justify-center">
-                <span className="text-white font-medium">S</span>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Seller Account</p>
-                <p className="text-xs text-gray-400">Premium Plan</p>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Dashboard Content */}
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
     </div>
   );
 }

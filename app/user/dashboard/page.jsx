@@ -87,7 +87,7 @@ export default function UserDashboard() {
   const fetchDashboardAnalytics = async () => {
     try {
       const data = await apiCall("/ai/dashboard");
-      console.log("Dashboard analytics data:", data);
+
       setDashboardData(data.data);
       return data.data;
     } catch (error) {

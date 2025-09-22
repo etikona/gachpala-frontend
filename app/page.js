@@ -6,9 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { motion } from "framer-motion";
 import hero from "../public/assets/hero.png";
-// import feature1 from "../public/assets/feature1.png";
-// import feature2 from "../public/assets/feature2.png";
-// import feature3 from "../public/assets/feature3.png";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,15 +23,14 @@ import {
 } from "@/components/icons";
 import PlantCareEcosystem from "@/components/PlantCareEcosystem";
 
-// SVG Icon Components
-
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
 const HomePage = () => {
   const container = useRef(null);
+  const heroRef = useRef(null);
 
-  // Hero animation
+  // Enhanced Hero animation
   useGSAP(
     () => {
       if (sessionStorage.getItem("homeAnimationPlayed")) {
@@ -43,26 +39,106 @@ const HomePage = () => {
       }
 
       const tl = gsap.timeline();
-      tl.from(".heading", {
-        y: -50,
+
+      // Floating particles animation
+      gsap.set(".floating-particle", {
         opacity: 0,
-        duration: 0.8,
-        ease: "power2.out",
+        scale: 0,
+        rotation: (i) => Math.random() * 360,
+      });
+
+      tl.from(".hero-badge", {
+        y: -30,
+        opacity: 0,
+        scale: 0.8,
+        duration: 1,
+        ease: "elastic.out(1, 0.8)",
       })
-        .from(".subheading", { y: 20, opacity: 0, duration: 0.7 }, "-=0.3")
-        .from(".cta-button", { scale: 0.8, opacity: 0, duration: 0.6 }, "-=0.4")
+        .from(
+          ".heading-line-1",
+          {
+            x: -100,
+            opacity: 0,
+            duration: 1.2,
+            ease: "power3.out",
+          },
+          "-=0.5"
+        )
+        .from(
+          ".heading-line-2",
+          {
+            x: 100,
+            opacity: 0,
+            duration: 1.2,
+            ease: "power3.out",
+          },
+          "-=0.8"
+        )
+        .from(
+          ".subheading",
+          {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            ease: "power2.out",
+          },
+          "-=0.4"
+        )
+        .from(
+          ".hero-buttons",
+          {
+            y: 40,
+            opacity: 0,
+            duration: 0.8,
+            ease: "power2.out",
+          },
+          "-=0.3"
+        )
         .from(
           ".hero-image",
-          { y: 30, opacity: 0, scale: 0.95, duration: 0.9 },
-          "-=0.3"
+          {
+            y: 50,
+            opacity: 0,
+            scale: 0.9,
+            rotation: 5,
+            duration: 1.2,
+            ease: "power2.out",
+          },
+          "-=0.6"
+        )
+        .to(
+          ".floating-particle",
+          {
+            opacity: 0.6,
+            scale: 1,
+            duration: 0.8,
+            stagger: 0.1,
+            ease: "power2.out",
+          },
+          "-=0.8"
         );
+
+      // Continuous floating animation for particles
+      gsap.to(".floating-particle", {
+        y: "random(-20, 20)",
+        x: "random(-15, 15)",
+        rotation: "+=180",
+        duration: "random(3, 6)",
+        repeat: -1,
+        yoyo: true,
+        ease: "power1.inOut",
+        stagger: {
+          amount: 2,
+          from: "random",
+        },
+      });
 
       sessionStorage.setItem("homeAnimationPlayed", "true");
     },
     { scope: container }
   );
 
-  // Section animations
+  // Section animations (keeping the original)
   useEffect(() => {
     gsap.utils.toArray(".animate-section").forEach((section) => {
       gsap.fromTo(
@@ -81,7 +157,6 @@ const HomePage = () => {
       );
     });
 
-    // Feature cards animation
     gsap.from(".feature-card", {
       stagger: 0.2,
       y: 50,
@@ -93,7 +168,6 @@ const HomePage = () => {
       },
     });
 
-    // Stats counter animation
     gsap.to(".stat-number", {
       innerText: function (index) {
         return [0, 95, 50000, 99][index];
@@ -111,70 +185,206 @@ const HomePage = () => {
   return (
     <div
       ref={container}
-      className="bg-gradient-to-br from-gray-900 to-slate-950 text-gray-100 overflow-hidden"
+      className="bg-gradient-to-br from-gray-900 via-slate-900 to-emerald-950/20 text-gray-100 overflow-hidden"
     >
-      {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-4 md:px-8 py-16 md:py-24 relative overflow-hidden">
+      {/* Enhanced Hero Section */}
+      <section
+        ref={heroRef}
+        className="relative min-h-screen flex flex-col items-center justify-center px-4 md:px-8 py-16 md:py-24 overflow-hidden"
+      >
+        {/* Enhanced Background Effects */}
         <div className="absolute inset-0 z-0">
+          {/* Gradient Orbs */}
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
           <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl animate-pulse-slower"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-emerald-500/5 via-transparent to-transparent rounded-full"></div>
+
+          {/* Grid Pattern Overlay */}
+          <div className="absolute inset-0 opacity-20">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+                backgroundSize: "40px 40px",
+              }}
+            ></div>
+          </div>
+
+          {/* Floating Particles */}
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="floating-particle absolute w-2 h-2 bg-emerald-400/40 rounded-full"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+              }}
+            />
+          ))}
         </div>
 
-        <div className="relative z-10 max-w-7xl w-full flex flex-col md:flex-row items-center justify-between gap-12">
-          <div className="flex-1">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="flex items-center gap-2 mb-4"
-            >
-              <LeafIcon className="text-emerald-400 w-6 h-6" />
-              <span className="text-emerald-400 font-medium tracking-wide">
-                AI-POWERED PLANT CARE
+        {/* Decorative Elements */}
+        <div className="absolute top-20 right-20 w-32 h-32 border border-emerald-500/20 rounded-full opacity-30"></div>
+        <div className="absolute bottom-32 left-16 w-24 h-24 border-2 border-teal-400/20 rounded-lg rotate-45 opacity-40"></div>
+        <div className="absolute top-1/2 right-10 w-16 h-16 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-sm"></div>
+
+        {/* Main Content */}
+        <div className="relative z-10 max-w-7xl w-full flex flex-col md:flex-row items-center justify-between gap-16">
+          <div className="flex-1 max-w-3xl">
+            {/* Premium Badge */}
+            <motion.div className="hero-badge inline-flex items-center gap-3 px-6 py-3 mb-8 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-full backdrop-blur-sm opacity-0">
+              <div className="relative">
+                <LeafIcon className="text-emerald-400 w-5 h-5" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
+              </div>
+              <span className="text-emerald-300 font-medium tracking-wide text-sm uppercase">
+                Next-Gen AI Plant Intelligence
               </span>
+              <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full"></div>
             </motion.div>
 
-            <h1 className="heading hero-element text-4xl md:text-6xl lg:text-7xl font-bold mb-6 opacity-0">
-              <span className="block">Nurture Your Plants</span>
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-                {/* bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent  */}
-                With AI Intelligence
-              </span>
-            </h1>
+            {/* Enhanced Heading */}
+            <div className="mb-8">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                <span className="heading-line-1 block opacity-0 mb-2">
+                  Revolutionize Your
+                </span>
+                <span className="heading-line-2 block opacity-0 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent">
+                  Plant Care Journey
+                </span>
+              </h1>
 
-            <p className="subheading hero-element text-lg md:text-xl text-gray-300 max-w-2xl mb-8 opacity-0">
-              Gachpala revolutionizes plant care with advanced AI diagnostics
-              and personalized insights. Monitor plant health, prevent diseases,
-              and optimize growth with our intelligent ecosystem.
+              {/* Decorative Line */}
+              <div className="mt-6 w-24 h-1 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"></div>
+            </div>
+
+            {/* Enhanced Subheading */}
+            <p className="subheading text-xl md:text-2xl text-gray-300 max-w-2xl mb-10 leading-relaxed opacity-0">
+              Experience the future of plant care with our cutting-edge AI
+              diagnostics.
+              <span className="text-emerald-300 font-medium">
+                {" "}
+                Detect diseases instantly
+              </span>
+              , optimize growth conditions, and transform every plant into a
+              thriving masterpiece.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="cta-button hero-element opacity-0 px-8 py-6 text-lg bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 text-white font-medium rounded-full transition-all duration-300 transform hover:-translate-y-1 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30">
-                Start Free Trial
+            {/* Enhanced CTA Buttons */}
+            <div className="hero-buttons flex flex-col sm:flex-row gap-6 opacity-0">
+              <Button className="group relative px-10 py-4 text-lg bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-600 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:-translate-y-2 shadow-2xl shadow-emerald-500/25 hover:shadow-emerald-500/40 overflow-hidden">
+                <span className="relative z-10 flex items-center gap-3">
+                  Start Your AI Journey
+                  <svg
+                    className="w-5 h-5 transition-transform group-hover:translate-x-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
               </Button>
+
               <Button
                 variant="outline"
-                className="px-8 py-6 text-lg border-gray-700 hover:bg-slate-800 text-white font-medium rounded-full"
+                className="group px-10 py-4 text-lg border-2 border-emerald-500/50 hover:border-emerald-400 bg-transparent hover:bg-emerald-500/10 text-emerald-300 hover:text-emerald-200 font-semibold rounded-2xl transition-all duration-300 backdrop-blur-sm"
               >
-                View Demo
+                <span className="flex items-center gap-3">
+                  Watch Demo
+                  <svg
+                    className="w-5 h-5 transition-transform group-hover:scale-110"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
               </Button>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="mt-12 flex items-center gap-8 text-sm text-gray-400">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                <span>99.5% Accuracy Rate</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
+                <span>50K+ Plants Analyzed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
+                <span>Real-time Monitoring</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex-1 flex justify-center">
-            <div className="hero-image hero-element opacity-0 relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 to-teal-400/10 rounded-3xl blur-xl z-0 animate-pulse"></div>
-              <Image
-                src={hero}
-                alt="AI Plant Analysis"
-                className="relative z-10 rounded-2xl shadow-2xl shadow-emerald-500/10 border border-slate-700/50"
-                priority
-              />
+          {/* Enhanced Image Section */}
+          <div className="flex-1 flex justify-center relative">
+            <div className="hero-image relative opacity-0">
+              {/* Layered Background Effects */}
+              <div className="absolute -inset-8 bg-gradient-to-r from-emerald-500/20 via-teal-400/15 to-emerald-600/20 rounded-3xl blur-2xl animate-pulse"></div>
+              <div className="absolute -inset-4 bg-gradient-to-br from-emerald-500/30 to-teal-400/20 rounded-2xl blur-xl"></div>
+
+              {/* Decorative Rings */}
+              <div className="absolute -inset-12 border-2 border-emerald-500/10 rounded-full animate-spin-slow"></div>
+              <div className="absolute -inset-16 border border-teal-400/10 rounded-full animate-spin-reverse"></div>
+
+              {/* Main Image Container */}
+              <div className="relative z-10 transform transition-transform duration-300 hover:scale-105">
+                <Image
+                  src={hero}
+                  alt="AI Plant Analysis Interface"
+                  className="relative rounded-2xl shadow-2xl shadow-emerald-500/20 border border-slate-700/50 backdrop-blur-sm"
+                  priority
+                />
+
+                {/* Floating UI Elements */}
+                <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center shadow-lg animate-bounce-slow">
+                  <RobotIcon className="w-6 h-6 text-white" />
+                </div>
+
+                <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-400 rounded-2xl flex items-center justify-center shadow-xl">
+                  <LightbulbIcon className="w-8 h-8 text-white" />
+                </div>
+              </div>
+
+              {/* Status Indicators */}
+              <div className="absolute top-4 right-4 flex flex-col gap-2">
+                <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/20 backdrop-blur-sm rounded-full border border-emerald-500/30">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span className="text-emerald-300 text-xs font-medium">
+                    AI Active
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-teal-500/20 backdrop-blur-sm rounded-full border border-teal-500/30">
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
+                  <span className="text-teal-300 text-xs font-medium">
+                    Analyzing
+                  </span>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
+          <span className="text-sm text-gray-400">Discover More</span>
+          <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-bounce"></div>
           </div>
         </div>
       </section>
 
+      {/* Rest of the sections remain the same */}
       {/* Stats Section */}
       <section
         id="stats"
