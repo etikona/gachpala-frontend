@@ -161,12 +161,13 @@ export default function SellerLayout({ children }) {
         </nav>
 
         {/* Logout Button in Sidebar */}
-        <div className="mt-auto pt-4 border-t border-gray-700">
+        <div className="absolute bottom-0 left-0 w-full p-5 border-t border-gray-800  text-gray-200 items-center ">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 p-3 rounded-lg text-left text-gray-300 hover:bg-gray-700/50 hover:text-red-400 transition-colors"
+            variant="destructive"
+            className="w-full flex items-center p-1 rounded text-center  bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-4 w-4 mr-2" />
             <span>Logout</span>
           </button>
         </div>

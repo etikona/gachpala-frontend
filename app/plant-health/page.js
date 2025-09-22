@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   Card,
   CardContent,
@@ -10,7 +11,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Upload,
@@ -33,12 +33,13 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
-// API base URL - adjust based on your environment
+// API base URL
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
-// Custom Progress component to fix indicatorColor issue
+// Custom Progress component
 const CustomProgress = ({ value, className }) => {
   return (
     <div className={`w-full bg-gray-700 rounded-full h-2 ${className}`}>
@@ -57,20 +58,17 @@ export default function PlantHealthPage() {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
+  const router = useRouter();
 
-  // Check authentication status
-  const checkAuthStatus = () => {
-    const token =
-      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
-    return !!token;
-  };
+  // Get authentication state from Redux
+  const { isLoggedIn, token } = useSelector((state) => state.auth);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size must be less than 5MB");
+      // Validate file size (max 10MB to match backend)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Image size must be less than 10MB");
         return;
       }
 
@@ -91,8 +89,9 @@ export default function PlantHealthPage() {
     }
 
     // Check authentication
-    if (!checkAuthStatus()) {
+    if (!isLoggedIn || !token) {
       toast.error("Please log in to analyze plants");
+      router.push("/login/user");
       return;
     }
 
@@ -105,12 +104,7 @@ export default function PlantHealthPage() {
       const formData = new FormData();
       formData.append("plant", selectedImage);
 
-      console.log("Sending request to backend...");
-
-      // Get authentication token
-      const token =
-        localStorage.getItem("authToken") ||
-        sessionStorage.getItem("authToken");
+      console.log("Sending request to backend with authentication...");
 
       // Start progress animation
       const progressInterval = setInterval(() => {
@@ -123,8 +117,8 @@ export default function PlantHealthPage() {
         });
       }, 200);
 
-      // Use the authenticated endpoint with proper headers
-      const response = await fetch(`${API_BASE_URL}/ai/plant-image`, {
+      // Updated endpoint to match new backend
+      const response = await fetch(`${API_BASE_URL}/ai/analyze`, {
         method: "POST",
         body: formData,
         headers: {
@@ -136,37 +130,31 @@ export default function PlantHealthPage() {
       setProgress(100);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API error:", response.status, errorText);
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Unknown error" }));
+        console.error("API error:", response.status, errorData);
 
         if (response.status === 401) {
           toast.error("Session expired. Please log in again.");
-          // Clear invalid token
-          localStorage.removeItem("authToken");
-          sessionStorage.removeItem("authToken");
+          router.push("/login/user");
           return;
         }
 
-        throw new Error(`Server returned ${response.status}: ${errorText}`);
+        throw new Error(
+          errorData.message || `Server returned ${response.status}`
+        );
       }
 
       const data = await response.json();
       console.log("API response data:", data);
 
-      // Handle response format
-      if (data.analysis) {
-        setAnalysisResult(data.analysis);
+      // Handle the new backend response structure
+      if (data.success && data.data) {
+        setAnalysisResult(data.data);
         toast.success("Plant analysis completed and saved successfully!");
-      } else if (data) {
-        setAnalysisResult(data);
-        toast.success("Plant analysis completed!");
       } else {
         throw new Error("Invalid response format from server");
-      }
-
-      // Refresh the dashboard data if we're coming from there
-      if (typeof window !== "undefined" && window.parent) {
-        window.parent.postMessage({ type: "ANALYSIS_COMPLETED" }, "*");
       }
     } catch (error) {
       console.error("Analysis error:", error);
@@ -183,10 +171,11 @@ export default function PlantHealthPage() {
         error.message.includes("403")
       ) {
         toast.error("Authentication failed. Please log in again.");
-        localStorage.removeItem("authToken");
-        sessionStorage.removeItem("authToken");
+        router.push("/login/user");
       } else {
-        toast.error("Failed to analyze plant image. Please try again.");
+        toast.error(
+          error.message || "Failed to analyze plant image. Please try again."
+        );
       }
     } finally {
       setIsLoading(false);
@@ -203,17 +192,23 @@ export default function PlantHealthPage() {
     }
   };
 
-  // Helper function to determine plant health status based on confidence
-  const getPlantHealthStatus = (confidence, originalStatus) => {
-    if (!confidence && !originalStatus) return "Unknown";
+  const handleLoginRedirect = () => {
+    router.push("/login/user");
+  };
 
-    // If confidence is available, use it to determine health
-    if (confidence) {
-      return confidence >= 80 ? "Healthy" : "Unhealthy";
-    }
+  // Updated helper function to determine plant health status
+  const getPlantHealthStatus = (analysisData) => {
+    if (!analysisData) return "Unknown";
 
-    // Fallback to original status
-    return originalStatus || "Unknown";
+    // Use the status from the backend response
+    const status = analysisData.status || analysisData.healthStatus;
+    if (status) return status;
+
+    // Fallback: determine from health score
+    const healthScore = analysisData.healthScore || 0;
+    if (healthScore >= 80) return "Healthy";
+    if (healthScore >= 50) return "Fair";
+    return "Unhealthy";
   };
 
   const getStatusIcon = (status) => {
@@ -223,7 +218,10 @@ export default function PlantHealthPage() {
       case "healthy":
         return <CheckCircle className="h-5 w-5 text-emerald-400" />;
       case "unhealthy":
+      case "diseased":
+      case "sick":
         return <AlertCircle className="h-5 w-5 text-red-400" />;
+      case "fair":
       case "at risk":
         return <AlertTriangle className="h-5 w-5 text-orange-400" />;
       case "error":
@@ -233,15 +231,16 @@ export default function PlantHealthPage() {
     }
   };
 
-  // Helper function to get status card styling based on confidence
-  const getStatusCardStyling = (confidence, status) => {
-    const healthStatus = getPlantHealthStatus(confidence, status);
-
-    switch (healthStatus.toLowerCase()) {
+  // Updated helper function to get status card styling
+  const getStatusCardStyling = (status) => {
+    switch (status?.toLowerCase()) {
       case "healthy":
         return "bg-emerald-900/30 border-emerald-800";
       case "unhealthy":
+      case "diseased":
+      case "sick":
         return "bg-red-900/30 border-red-800";
+      case "fair":
       case "at risk":
         return "bg-orange-900/30 border-orange-800";
       default:
@@ -249,7 +248,7 @@ export default function PlantHealthPage() {
     }
   };
 
-  // Helper function to safely access nested properties
+  // Updated helper function for safe property access
   const getSafe = (obj, path, defaultValue = "N/A") => {
     if (!obj) return defaultValue;
 
@@ -269,7 +268,7 @@ export default function PlantHealthPage() {
     return current || defaultValue;
   };
 
-  // PDF Download Function
+  // Updated PDF Download Function
   const downloadPDFReport = async () => {
     if (!analysisResult) {
       toast.error("No analysis result to download");
@@ -281,10 +280,11 @@ export default function PlantHealthPage() {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF();
 
-      // Get calculated health status
+      // Get data from the new response structure
+      const healthStatus = getPlantHealthStatus(analysisResult);
       const confidence = getSafe(analysisResult, "confidence", 0);
-      const originalStatus = getSafe(analysisResult, "status");
-      const healthStatus = getPlantHealthStatus(confidence, originalStatus);
+      const plantType = getSafe(analysisResult, "plantType", "Unknown Plant");
+      const scientificName = getSafe(analysisResult, "scientificName", "N/A");
 
       // Add title
       doc.setFontSize(20);
@@ -302,9 +302,6 @@ export default function PlantHealthPage() {
       doc.text("Plant Identification", 20, 60);
 
       doc.setFontSize(12);
-      const plantType = getSafe(analysisResult, "plantType", "Unknown Plant");
-      const scientificName = getSafe(analysisResult, "scientificName", "N/A");
-
       doc.text(`Plant Type: ${plantType}`, 25, 75);
       doc.text(`Scientific Name: ${scientificName}`, 25, 85);
       doc.text(`Confidence Score: ${confidence}%`, 25, 95);
@@ -317,7 +314,10 @@ export default function PlantHealthPage() {
       // Set color based on health status
       if (healthStatus.toLowerCase() === "healthy") {
         doc.setTextColor(34, 197, 94); // Green
-      } else if (healthStatus.toLowerCase() === "unhealthy") {
+      } else if (
+        healthStatus.toLowerCase().includes("unhealthy") ||
+        healthStatus.toLowerCase().includes("diseased")
+      ) {
         doc.setTextColor(239, 68, 68); // Red
       } else {
         doc.setTextColor(249, 115, 22); // Orange
@@ -327,7 +327,7 @@ export default function PlantHealthPage() {
 
       doc.setTextColor(0, 0, 0);
       const disease = getSafe(analysisResult, "disease");
-      if (disease && disease !== "null") {
+      if (disease && disease !== "None" && disease !== "null") {
         doc.text(`Detected Issue: ${disease}`, 25, 140);
       } else {
         doc.text("No diseases detected", 25, 140);
@@ -342,14 +342,20 @@ export default function PlantHealthPage() {
       const splitDescription = doc.splitTextToSize(description, 170);
       doc.text(splitDescription, 25, 155);
 
-      // Environmental requirements
+      // Environmental requirements (updated for new structure)
       doc.setFontSize(16);
       doc.text("Environmental Requirements", 20, 190);
 
       doc.setFontSize(12);
-      const humidity = getSafe(analysisResult, "measurements.humidity", "N/A");
-      const light = getSafe(analysisResult, "measurements.light", "N/A");
-      const temp = getSafe(analysisResult, "measurements.temp", "N/A");
+      const humidity =
+        getSafe(analysisResult, "measurements.humidity") ||
+        getSafe(analysisResult, "environmental.humidity", "N/A");
+      const light =
+        getSafe(analysisResult, "measurements.light") ||
+        getSafe(analysisResult, "environmental.light", "N/A");
+      const temp =
+        getSafe(analysisResult, "measurements.temp") ||
+        getSafe(analysisResult, "environmental.temperature", "N/A");
 
       doc.text(`Humidity: ${humidity}`, 25, 205);
       doc.text(`Light: ${light}`, 25, 215);
@@ -448,12 +454,12 @@ export default function PlantHealthPage() {
         </div>
 
         {/* Authentication warning */}
-        {!checkAuthStatus() && (
+        {!isLoggedIn && (
           <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-8">
             <p className="font-medium">Authentication Required</p>
             <p>You need to be logged in to analyze plants and save results.</p>
             <button
-              onClick={() => (window.location.href = "/login/user")}
+              onClick={handleLoginRedirect}
               className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded mt-2"
             >
               Go to Login
@@ -501,7 +507,7 @@ export default function PlantHealthPage() {
                   <p className="text-gray-500">
                     Click to upload or drag and drop
                   </p>
-                  <p className="text-sm text-gray-600">JPG, PNG (Max 5MB)</p>
+                  <p className="text-sm text-gray-600">JPG, PNG (Max 10MB)</p>
                 </div>
               )}
 
@@ -533,7 +539,8 @@ export default function PlantHealthPage() {
                   <div>
                     <p className="text-sm font-medium">Privacy First</p>
                     <p className="text-xs text-gray-500">
-                      Your images are processed securely and not stored
+                      Your images are processed securely and saved to your
+                      account
                     </p>
                   </div>
                 </div>
@@ -551,7 +558,7 @@ export default function PlantHealthPage() {
                 <Button
                   className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={analyzePlantHealth}
-                  disabled={!selectedImage || isLoading || !checkAuthStatus()}
+                  disabled={!selectedImage || isLoading || !isLoggedIn}
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">
@@ -607,31 +614,21 @@ export default function PlantHealthPage() {
                   {/* Status Card with updated logic */}
                   <div
                     className={`p-4 rounded-lg border ${getStatusCardStyling(
-                      getSafe(analysisResult, "confidence", 0),
-                      getSafe(analysisResult, "status")
+                      getPlantHealthStatus(analysisResult)
                     )}`}
                   >
                     <div className="flex justify-between items-center">
                       <div>
                         <h3 className="font-medium flex items-center gap-2">
-                          {getStatusIcon(
-                            getPlantHealthStatus(
-                              getSafe(analysisResult, "confidence", 0),
-                              getSafe(analysisResult, "status")
-                            )
-                          )}
-                          {getPlantHealthStatus(
-                            getSafe(analysisResult, "confidence", 0),
-                            getSafe(analysisResult, "status")
-                          )}
+                          {getStatusIcon(getPlantHealthStatus(analysisResult))}
+                          {getPlantHealthStatus(analysisResult)}
                         </h3>
                         <p className="text-sm text-gray-400 mt-1">
                           {getSafe(analysisResult, "disease") &&
-                          getSafe(analysisResult, "disease") !== "null"
+                          getSafe(analysisResult, "disease") !== "None"
                             ? `Detected: ${getSafe(analysisResult, "disease")}`
                             : getPlantHealthStatus(
-                                getSafe(analysisResult, "confidence", 0),
-                                getSafe(analysisResult, "status")
+                                analysisResult
                               ).toLowerCase() === "healthy"
                             ? "No diseases detected"
                             : "Health assessment complete"}
@@ -640,6 +637,39 @@ export default function PlantHealthPage() {
                       <div className="bg-gray-900 px-3 py-1 rounded-full text-sm font-medium">
                         {getSafe(analysisResult, "confidence", 0)}% confidence
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Plant Information Card */}
+                  <div className="bg-gray-900 rounded-lg p-4">
+                    <h3 className="font-medium text-emerald-400 mb-3">
+                      Plant Identification
+                    </h3>
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Type:</span>
+                        <span>
+                          {getSafe(
+                            analysisResult,
+                            "plantType",
+                            "Unknown Plant"
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Scientific Name:</span>
+                        <span className="text-sm">
+                          {getSafe(analysisResult, "scientificName", "N/A")}
+                        </span>
+                      </div>
+                      {getSafe(analysisResult, "healthScore") > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Health Score:</span>
+                          <span>
+                            {getSafe(analysisResult, "healthScore", 0)}/100
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -672,7 +702,7 @@ export default function PlantHealthPage() {
                           {getSafe(
                             analysisResult,
                             "description",
-                            "No description available."
+                            "Analysis completed successfully."
                           )}
                         </p>
 
@@ -682,29 +712,35 @@ export default function PlantHealthPage() {
                             <p className="font-medium mt-1">
                               {getSafe(
                                 analysisResult,
-                                "measurements.humidity",
-                                "N/A"
-                              )}
+                                "measurements.humidity"
+                              ) ||
+                                getSafe(
+                                  analysisResult,
+                                  "environmental.humidity",
+                                  "N/A"
+                                )}
                             </p>
                           </div>
                           <div className="bg-gray-900 rounded-lg p-4">
                             <p className="text-sm text-gray-500">Light Level</p>
                             <p className="font-medium mt-1">
-                              {getSafe(
-                                analysisResult,
-                                "measurements.light",
-                                "N/A"
-                              )}
+                              {getSafe(analysisResult, "measurements.light") ||
+                                getSafe(
+                                  analysisResult,
+                                  "environmental.light",
+                                  "N/A"
+                                )}
                             </p>
                           </div>
                           <div className="bg-gray-900 rounded-lg p-4">
                             <p className="text-sm text-gray-500">Temperature</p>
                             <p className="font-medium mt-1">
-                              {getSafe(
-                                analysisResult,
-                                "measurements.temp",
-                                "N/A"
-                              )}
+                              {getSafe(analysisResult, "measurements.temp") ||
+                                getSafe(
+                                  analysisResult,
+                                  "environmental.temperature",
+                                  "N/A"
+                                )}
                             </p>
                           </div>
                         </div>
@@ -754,7 +790,7 @@ export default function PlantHealthPage() {
                                   {getSafe(
                                     analysisResult,
                                     "fertilizer.type",
-                                    "Not specified"
+                                    "General purpose fertilizer"
                                   )}
                                 </p>
                                 <div className="mt-3 space-y-2">
@@ -764,7 +800,7 @@ export default function PlantHealthPage() {
                                       {getSafe(
                                         analysisResult,
                                         "fertilizer.application",
-                                        "Not specified"
+                                        "Apply as directed"
                                       )}
                                     </span>
                                   </div>
@@ -774,7 +810,7 @@ export default function PlantHealthPage() {
                                       {getSafe(
                                         analysisResult,
                                         "fertilizer.frequency",
-                                        "Not specified"
+                                        "Monthly"
                                       )}
                                     </span>
                                   </div>
@@ -795,14 +831,16 @@ export default function PlantHealthPage() {
                           </>
                         ) : (
                           <p className="text-gray-400">
-                            No specific treatment recommendations available.
+                            General care recommendations apply. Maintain
+                            consistent watering and appropriate lighting
+                            conditions.
                           </p>
                         )}
                       </div>
                     </TabsContent>
                   </Tabs>
 
-                  {/* Updated button section - removed shopping cart, improved PDF download */}
+                  {/* Download PDF button */}
                   <div className="mt-8 flex justify-center">
                     <Button
                       className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 px-8"
