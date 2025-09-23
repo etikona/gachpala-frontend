@@ -37,6 +37,7 @@ import { UsageStats } from "@/components/subscription/UsageStats";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
+import UserProfileCard from "@/components/UserProfileCard";
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -380,56 +381,7 @@ export default function UserDashboard() {
         {/* Left Sidebar */}
         <div className="lg:col-span-1 space-y-6">
           {/* User Profile Card */}
-          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-2xl p-6 shadow-xl">
-            <div className="flex flex-col items-center text-center">
-              <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-4">
-                  <span className="text-2xl font-bold text-white">AJ</span>
-                </div>
-                <div className="absolute bottom-2 right-2 bg-emerald-500 rounded-full p-1 border-2 border-gray-900">
-                  <Leaf className="h-4 w-4 text-white" />
-                </div>
-              </div>
-              <h2 className="text-xl font-bold text-white">Alex Johnson</h2>
-              <p className="text-emerald-400 mb-2">Premium Member</p>
-              <p className="text-gray-400 text-sm mb-6">
-                Plant Enthusiast | Since 2021
-              </p>
-
-              <div className="flex justify-between w-full mb-6">
-                <div className="text-center">
-                  <p className="text-white font-bold">
-                    {dashboardData?.summary?.totalScans || 0}
-                  </p>
-                  <p className="text-gray-400 text-sm">Plants</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-white font-bold">
-                    {dashboardData?.summary?.uniquePlantTypes || 0}
-                  </p>
-                  <p className="text-gray-400 text-sm">Types</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-white font-bold">
-                    {dashboardData?.summary?.averageHealthScore || "0"}
-                  </p>
-                  <p className="text-gray-400 text-sm">Avg Health</p>
-                </div>
-              </div>
-
-              <button
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2.5 rounded-xl font-medium mb-3 hover:opacity-90 transition-opacity disabled:opacity-50"
-                onClick={refreshAllData}
-                disabled={loading}
-              >
-                {loading ? (
-                  <RefreshCw className="h-4 w-4 animate-spin mx-auto" />
-                ) : (
-                  "Refresh Data"
-                )}
-              </button>
-            </div>
-          </div>
+          <UserProfileCard token={token} />
 
           <UsageStats />
 
