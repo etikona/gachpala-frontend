@@ -42,7 +42,7 @@ export default function UserProfilePage() {
         setLoading(true);
         setError(null);
         const response = await fetch(
-          `http://localhost:5000/api/v1/admin/users/${id}`
+          `https://gachpala-server.onrender.com/api/v1/admin/users/${id}`
         );
 
         console.log(response);

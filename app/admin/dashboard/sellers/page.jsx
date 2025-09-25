@@ -51,7 +51,7 @@ export default function SellersPage() {
   const fetchStats = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/v1/admin/sellers/stats"
+        "https://gachpala-server.onrender.com/api/v1/admin/sellers/stats"
       );
       const data = await response.json();
       setStats(data);
@@ -69,7 +69,9 @@ export default function SellersPage() {
   const fetchSellers = async () => {
     setLoading(true);
     try {
-      const url = new URL("http://localhost:5000/api/v1/admin/sellers");
+      const url = new URL(
+        "https://gachpala-server.onrender.com/api/v1/admin/sellers"
+      );
       url.searchParams.append("page", pagination.page);
       url.searchParams.append("limit", pagination.limit);
       if (statusFilter) url.searchParams.append("status", statusFilter);
@@ -100,7 +102,7 @@ export default function SellersPage() {
   const updateSellerStatus = async (sellerId, newStatus) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/sellers/${sellerId}`,
+        `https://gachpala-server.onrender.com/api/v1/admin/sellers/${sellerId}`,
         {
           method: "PUT",
           headers: {
@@ -134,7 +136,7 @@ export default function SellersPage() {
   const deleteSeller = async (sellerId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/sellers/${sellerId}`,
+        `https://gachpala-server.onrender.com/api/v1/admin/sellers/${sellerId}`,
         {
           method: "DELETE",
         }

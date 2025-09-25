@@ -13,7 +13,8 @@ import ProductReviews from "@/components/ProductReviews";
 import ReviewForm from "@/components/ReviewForm";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://gachpala-server.onrender.com/api/v1";
 
 // Helper function to convert image path to full URL
 const getImageUrl = (imagePath) => {

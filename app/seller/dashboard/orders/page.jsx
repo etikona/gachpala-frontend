@@ -64,7 +64,7 @@ export default function SellerOrdersPage() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:5000/api/v1/orders/seller/orders",
+        "https://gachpala-server.onrender.com/api/v1/orders/seller/orders",
         {
           method: "GET",
           headers: {
@@ -101,7 +101,7 @@ export default function SellerOrdersPage() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/v1/orders/${orderId}/cancel`,
+        `https://gachpala-server.onrender.com/api/v1/orders/${orderId}/cancel`,
         {
           method: "PUT",
           headers: {

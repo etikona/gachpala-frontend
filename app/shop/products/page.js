@@ -17,7 +17,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://gachpala-server.onrender.com/api/v1";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);

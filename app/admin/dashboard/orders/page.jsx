@@ -76,7 +76,9 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/v1/orders/admin/all");
+      const res = await fetch(
+        "https://gachpala-server.onrender.com/api/v1/orders/admin/all"
+      );
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       console.log(data);
@@ -93,7 +95,7 @@ export default function OrdersPage() {
   const fetchStats = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/v1/orders/admin/stats"
+        "https://gachpala-server.onrender.com/api/v1/orders/admin/stats"
       );
       if (!res.ok) throw new Error("Failed to fetch stats");
       const data = await res.json();
@@ -109,7 +111,7 @@ export default function OrdersPage() {
     try {
       setUpdating(orderId);
       const res = await fetch(
-        `http://localhost:5000/api/v1/orders/admin/${orderId}/status`,
+        `https://gachpala-server.onrender.com/api/v1/orders/admin/${orderId}/status`,
         {
           method: "PUT",
           headers: {
@@ -138,7 +140,7 @@ export default function OrdersPage() {
     try {
       setUpdating(orderId);
       const res = await fetch(
-        `http://localhost:5000/api/v1/orders/admin/${orderId}/notes`,
+        `https://gachpala-server.onrender.com/api/v1/orders/admin/${orderId}/notes`,
         {
           method: "PUT",
           headers: {
@@ -174,7 +176,7 @@ export default function OrdersPage() {
     try {
       setUpdating(orderId);
       const res = await fetch(
-        `http://localhost:5000/api/v1/orders/admin/${orderId}/cancel`,
+        `https://gachpala-server.onrender.com/api/v1/orders/admin/${orderId}/cancel`,
         {
           method: "PUT",
         }
@@ -199,7 +201,7 @@ export default function OrdersPage() {
     try {
       setUpdating(orderId);
       const res = await fetch(
-        `http://localhost:5000/api/v1/orders/admin/${orderId}`,
+        `https://gachpala-server.onrender.com/api/v1/orders/admin/${orderId}`,
         {
           method: "DELETE",
         }
@@ -225,7 +227,7 @@ export default function OrdersPage() {
   const viewDetails = async (orderId) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/v1/orders/admin/${orderId}`
+        `https://gachpala-server.onrender.com/api/v1/orders/admin/${orderId}`
       );
       const data = await res.json();
       if (res.ok) {

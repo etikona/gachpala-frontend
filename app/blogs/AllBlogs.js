@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const PER_PAGE = 12;
 
@@ -54,12 +55,14 @@ export default function AllBlogsPage() {
             <Link key={blog.id} href={`/blogs/${blog.slug}`}>
               <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-gray-900 rounded-lg shadow hover:bg-gray-800 transition">
                 {/* Cover Image */}
-                <img
+                <Image
                   src={
                     blog.image.startsWith("/")
                       ? blog.image
                       : `/assets/default.jpg`
                   }
+                  width={600}
+                  height={400}
                   alt={blog.title}
                   className="w-full md:w-56 h-40 object-cover rounded"
                 />

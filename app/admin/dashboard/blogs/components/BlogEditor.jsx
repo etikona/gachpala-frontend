@@ -113,8 +113,8 @@ const BlogEditor = ({ initialPost = null }) => {
     }
 
     const url = initialPost?._id
-      ? `http://localhost:5000/api/v1/blog/${initialPost._id}`
-      : "http://localhost:5000/api/v1/blog";
+      ? `https://gachpala-server.onrender.com/api/v1/blog/${initialPost._id}`
+      : "https://gachpala-server.onrender.com/api/v1/blog";
 
     try {
       const response = await fetch(url, {
@@ -348,10 +348,13 @@ const BlogEditor = ({ initialPost = null }) => {
                       <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-700 rounded-xl p-8">
                         {imagePreview ? (
                           <div className="relative group">
-                            <img
+                            <Image
                               src={imagePreview}
                               alt="Preview"
                               className="max-h-80 rounded-lg object-cover"
+                              width={600}
+                              height={400}
+                              unoptimized
                             />
                             <Button
                               variant="destructive"
@@ -540,12 +543,14 @@ const BlogEditor = ({ initialPost = null }) => {
                   <CardContent>
                     <div className="space-y-4">
                       {imagePreview ? (
-                        <img
+                        <Image
                           src={
                             typeof imagePreview === "string"
                               ? imagePreview
                               : URL.createObjectURL(imagePreview)
                           }
+                          width={600}
+                          height={400}
                           alt="Preview"
                           className="rounded-lg aspect-video object-cover"
                         />
@@ -656,7 +661,7 @@ const BlogEditor = ({ initialPost = null }) => {
                 </div>
 
                 {imagePreview ? (
-                  <img
+                  <Image
                     src={
                       typeof imagePreview === "string"
                         ? imagePreview
@@ -664,6 +669,8 @@ const BlogEditor = ({ initialPost = null }) => {
                     }
                     alt="Featured"
                     className="w-full h-auto rounded-xl mb-8"
+                    width={1200}
+                    height={630}
                   />
                 ) : (
                   <div className="bg-gray-800 border-2 border-dashed border-gray-700 rounded-xl aspect-video flex items-center justify-center mb-8">

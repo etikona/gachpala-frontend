@@ -50,7 +50,7 @@ export function UsageStats() {
       // Fetch dashboard data
       try {
         const dashboardResponse = await fetch(
-          "http://localhost:5000/api/v1/ai/dashboard",
+          "https://gachpala-server.onrender.com/api/v1/ai/dashboard",
           {
             method: "GET",
             headers: {

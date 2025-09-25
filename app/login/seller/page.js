@@ -29,7 +29,7 @@ export default function SellerLogin() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/v1/seller/login`,
+        `https://gachpala-server.onrender.com/api/v1/seller/login`,
         {
           method: "POST",
           headers: {

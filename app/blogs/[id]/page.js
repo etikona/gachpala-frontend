@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { FiArrowLeft, FiCalendar, FiUser, FiTag } from "react-icons/fi";
+import Image from "next/image";
 
 // Improved tag parser for your specific format
 const parseTags = (tagsInput) => {
@@ -164,10 +165,12 @@ export default function BlogDetailPage() {
         {/* Cover Image */}
         {blog.image ? (
           <div className="relative aspect-video rounded-2xl overflow-hidden border border-gray-800 shadow-lg mb-8">
-            <img
+            <Image
               src={blog.image}
               alt={blog.title}
               className="w-full h-full object-cover"
+              width={800}
+              height={400}
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = "/assets/default.jpg";

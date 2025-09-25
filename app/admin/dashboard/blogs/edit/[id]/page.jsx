@@ -17,7 +17,9 @@ export default function EditBlogPostPage() {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/v1/blog/${id}`);
+        const response = await fetch(
+          `https://gachpala-server.onrender.com/api/v1/blog/${id}`
+        );
 
         console.log("Fetch response status:", response.status);
 

@@ -51,7 +51,9 @@ const BlogManagementPage = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/v1/blog`);
+        const res = await fetch(
+          `https://gachpala-server.onrender.com/api/v1/blog`
+        );
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -109,7 +111,7 @@ const BlogManagementPage = () => {
       setDeletingId(postToDelete.id);
 
       const res = await fetch(
-        `http://localhost:5000/api/v1/blog/${postToDelete.id}`,
+        `https://gachpala-server.onrender.com/api/v1/blog/${postToDelete.id}`,
         {
           method: "DELETE",
         }

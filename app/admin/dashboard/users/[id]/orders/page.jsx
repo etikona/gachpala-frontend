@@ -46,7 +46,7 @@ export default function OrderHistoryPage() {
 
         // Fetch user info
         const userRes = await fetch(
-          `http://localhost:5000/api/v1/admin/users/${userId}`
+          `https://gachpala-server.onrender.com/api/v1/admin/users/${userId}`
         );
         if (!userRes.ok) {
           const errorData = await userRes.json();
@@ -57,7 +57,7 @@ export default function OrderHistoryPage() {
 
         // Fetch orders
         const ordersRes = await fetch(
-          `http://localhost:5000/api/v1/admin/users/${userId}/orders?page=${currentPage}&limit=10`
+          `https://gachpala-server.onrender.com/api/v1/admin/users/${userId}/orders?page=${currentPage}&limit=10`
         );
         if (!ordersRes.ok) {
           const errorData = await ordersRes.json();

@@ -16,7 +16,7 @@ export default function EditSellerPage() {
     const fetchSeller = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/v1/admin/sellers/${id}`
+          `https://gachpala-server.onrender.com/api/v1/admin/sellers/${id}`
         );
         if (!res.ok) {
           const errorData = await res.json();
@@ -39,7 +39,7 @@ export default function EditSellerPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/sellers/${id}`,
+        `https://gachpala-server.onrender.com/api/v1/admin/sellers/${id}`,
         {
           method: "PUT",
           headers: {},

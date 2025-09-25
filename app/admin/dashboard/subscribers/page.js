@@ -61,9 +61,15 @@ export default function AdminSubscriptionsPage() {
     try {
       setLoading(true);
       const [subscriptionsRes, plansRes, statsRes] = await Promise.all([
-        fetch("http://localhost:5000/api/v1/subscription/admin/all"),
-        fetch("http://localhost:5000/api/v1/subscription/admin/plans"),
-        fetch("http://localhost:5000/api/v1/subscription/admin/stats"),
+        fetch(
+          "https://gachpala-server.onrender.com/api/v1/subscription/admin/all"
+        ),
+        fetch(
+          "https://gachpala-server.onrender.com/api/v1/subscription/admin/plans"
+        ),
+        fetch(
+          "https://gachpala-server.onrender.com/api/v1/subscription/admin/stats"
+        ),
       ]);
 
       if (subscriptionsRes.ok) {
@@ -97,7 +103,7 @@ export default function AdminSubscriptionsPage() {
   const handleUpdateSubscription = async (subscriptionId, updates) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/subscription/admin/subscription/${subscriptionId}`,
+        `https://gachpala-server.onrender.com/api/v1/subscription/admin/subscription/${subscriptionId}`,
         {
           method: "PUT",
           headers: {
@@ -128,7 +134,7 @@ export default function AdminSubscriptionsPage() {
   const handleResetUsage = async (subscriptionId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/subscription/admin/reset-usage/${subscriptionId}`,
+        `https://gachpala-server.onrender.com/api/v1/subscription/admin/reset-usage/${subscriptionId}`,
         {
           method: "POST",
         }
@@ -155,7 +161,7 @@ export default function AdminSubscriptionsPage() {
   const handleCreatePlan = async (planData) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/admin/plans",
+        "https://gachpala-server.onrender.com/api/v1/subscription/admin/plans",
         {
           method: "POST",
           headers: {
@@ -186,7 +192,7 @@ export default function AdminSubscriptionsPage() {
   const handleUpdatePlan = async (planId, updates) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/subscription/admin/plans/${planId}`,
+        `https://gachpala-server.onrender.com/api/v1/subscription/admin/plans/${planId}`,
         {
           method: "PUT",
           headers: {
@@ -217,7 +223,7 @@ export default function AdminSubscriptionsPage() {
   const handleDeletePlan = async (planId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/subscription/admin/plans/${planId}`,
+        `https://gachpala-server.onrender.com/api/v1/subscription/admin/plans/${planId}`,
         {
           method: "DELETE",
         }

@@ -15,6 +15,7 @@ import {
   MapPin,
   Globe,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function ViewSellerPage() {
   const { id } = useParams();
@@ -29,7 +30,7 @@ export default function ViewSellerPage() {
       try {
         // Fetch seller details
         const sellerResponse = await fetch(
-          `http://localhost:5000/api/v1/admin/sellers/${id}`
+          `https://gachpala-server.onrender.com/api/v1/admin/sellers/${id}`
         );
         if (!sellerResponse.ok) throw new Error("Failed to fetch seller");
         const sellerData = await sellerResponse.json();
@@ -37,7 +38,7 @@ export default function ViewSellerPage() {
 
         // Fetch seller products
         const productsResponse = await fetch(
-          `http://localhost:5000/api/v1/products?seller_id=${id}`
+          `https://gachpala-server.onrender.com/api/v1/products?seller_id=${id}`
         );
         if (!productsResponse.ok) throw new Error("Failed to fetch products");
         const productsData = await productsResponse.json();
@@ -218,10 +219,12 @@ export default function ViewSellerPage() {
                       >
                         <div className="aspect-square bg-gray-700 rounded-md mb-3 overflow-hidden">
                           {product.images?.[0] ? (
-                            <img
+                            <Image
                               src={product.images[0]}
                               alt={product.name}
                               className="w-full h-full object-cover"
+                              width={600}
+                              height={400}
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-500">

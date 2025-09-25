@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Leaf, Edit3, Camera, X, Save, Loader } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -299,10 +300,12 @@ const UserProfileCard = () => {
           <div className="relative mb-4">
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center overflow-hidden">
               {userProfile.profileImage ? (
-                <img
+                <Image
                   src={userProfile.profileImage}
                   alt={userProfile.name}
                   className="w-full h-full object-cover"
+                  width={96}
+                  height={96}
                   onError={(e) => {
                     // Fallback to initials if image fails to load
                     e.target.style.display = "none";
@@ -385,10 +388,12 @@ const UserProfileCard = () => {
                 <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-4 overflow-hidden relative group">
                   {editForm.profileImage ? (
                     <>
-                      <img
+                      <Image
                         src={editForm.profileImage}
                         alt="Preview"
                         className="w-full h-full object-cover"
+                        width={80}
+                        height={80}
                       />
                       <button
                         onClick={handleRemoveImage}

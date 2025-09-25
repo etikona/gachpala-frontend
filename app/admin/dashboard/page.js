@@ -45,11 +45,21 @@ export default function AdminHomePage() {
           metricsRes,
           recentActivityRes,
         ] = await Promise.all([
-          fetch("http://localhost:5000/api/v1/admin/overview/stats"),
-          fetch("http://localhost:5000/api/v1/admin/overview/revenue"),
-          fetch("http://localhost:5000/api/v1/admin/overview/user-activity"),
-          fetch("http://localhost:5000/api/v1/admin/overview/metrics"),
-          fetch("http://localhost:5000/api/v1/admin/overview/recent-activity"),
+          fetch(
+            "https://gachpala-server.onrender.com/api/v1/admin/overview/stats"
+          ),
+          fetch(
+            "https://gachpala-server.onrender.com/api/v1/admin/overview/revenue"
+          ),
+          fetch(
+            "https://gachpala-server.onrender.com/api/v1/admin/overview/user-activity"
+          ),
+          fetch(
+            "https://gachpala-server.onrender.com/api/v1/admin/overview/metrics"
+          ),
+          fetch(
+            "https://gachpala-server.onrender.com/api/v1/admin/overview/recent-activity"
+          ),
         ]);
 
         // Check if all responses are OK

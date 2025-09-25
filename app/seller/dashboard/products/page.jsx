@@ -51,10 +51,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import Image from "next/image";
 
 // API base URL
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://gachpala-server.onrender.com/api/v1";
 
 // Product categories for dropdown
 const PRODUCT_CATEGORIES = [
@@ -624,12 +626,14 @@ export default function ProductsPage() {
                           <div className="flex items-center gap-3">
                             <div className="bg-emerald-900/20 border border-emerald-500/30 w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
                               {product.image ? (
-                                <img
+                                <Image
                                   src={`${API_BASE_URL.replace("/api/v1", "")}${
                                     product.image
                                   }`}
                                   alt={product.name}
                                   className="w-full h-full object-cover rounded-lg"
+                                  width={600}
+                                  height={400}
                                   onError={(e) => {
                                     e.target.style.display = "none";
                                     e.target.nextElementSibling.style.display =
@@ -727,10 +731,12 @@ export default function ProductsPage() {
                   <div className="border-2 border-dashed border-gray-600 rounded-lg w-32 h-32 flex items-center justify-center overflow-hidden bg-gray-700/30">
                     {imagePreview ? (
                       <div className="relative w-full h-full">
-                        <img
+                        <Image
                           src={imagePreview}
                           alt="Preview"
                           className="w-full h-full object-cover"
+                          width={600}
+                          height={400}
                         />
                         <button
                           type="button"

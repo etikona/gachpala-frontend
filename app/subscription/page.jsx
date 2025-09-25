@@ -73,7 +73,7 @@ const SubscriptionPage = () => {
     try {
       const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/plans",
+        "https://gachpala-server.onrender.com/api/v1/subscription/plans",
         {
           headers: {
             "Content-Type": "application/json",
@@ -97,7 +97,7 @@ const SubscriptionPage = () => {
     try {
       const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/current",
+        "https://gachpala-server.onrender.com/api/v1/subscription/current",
         {
           headers: {
             "Content-Type": "application/json",
@@ -118,7 +118,7 @@ const SubscriptionPage = () => {
     try {
       const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/history",
+        "https://gachpala-server.onrender.com/api/v1/subscription/history",
         {
           headers: {
             "Content-Type": "application/json",
@@ -139,7 +139,7 @@ const SubscriptionPage = () => {
     try {
       const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/check-generation",
+        "https://gachpala-server.onrender.com/api/v1/subscription/check-generation",
         {
           headers: {
             "Content-Type": "application/json",
@@ -171,7 +171,7 @@ const SubscriptionPage = () => {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/v1/ai/dashboard",
+        "https://gachpala-server.onrender.com/api/v1/ai/dashboard",
         {
           headers: {
             "Content-Type": "application/json",
@@ -211,7 +211,7 @@ const SubscriptionPage = () => {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/subscribe",
+        "https://gachpala-server.onrender.com/api/v1/subscription/subscribe",
         {
           method: "POST",
           headers: {
@@ -261,7 +261,7 @@ const SubscriptionPage = () => {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/upgrade",
+        "https://gachpala-server.onrender.com/api/v1/subscription/upgrade",
         {
           method: "POST",
           headers: {
@@ -302,7 +302,7 @@ const SubscriptionPage = () => {
       const token = getAuthToken();
 
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/cancel",
+        "https://gachpala-server.onrender.com/api/v1/subscription/cancel",
         {
           method: "POST",
           headers: {
@@ -331,7 +331,7 @@ const SubscriptionPage = () => {
     try {
       const token = getAuthToken();
       const response = await fetch(
-        "http://localhost:5000/api/v1/subscription/track-image",
+        "https://gachpala-server.onrender.com/api/v1/subscription/track-image",
         {
           method: "POST",
           headers: {

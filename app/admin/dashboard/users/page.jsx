@@ -79,7 +79,7 @@ export default function UsersPage() {
   const fetchUsers = async (page = 1) => {
     try {
       setLoading(true);
-      let url = `http://localhost:5000/api/v1/admin/users?page=${page}&limit=10`;
+      let url = `https://gachpala-server.onrender.com/api/v1/admin/users?page=${page}&limit=10`;
 
       if (searchQuery) {
         url += `&search=${encodeURIComponent(searchQuery)}`;
@@ -108,7 +108,9 @@ export default function UsersPage() {
   // Fetch dashboard stats
   const fetchStats = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/v1/admin/users/stats");
+      const res = await fetch(
+        "https://gachpala-server.onrender.com/api/v1/admin/users/stats"
+      );
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message || "Failed to fetch stats");
@@ -133,22 +135,22 @@ export default function UsersPage() {
 
       switch (action) {
         case "suspend":
-          url = `http://localhost:5000/api/v1/admin/users/${userId}/suspend`;
+          url = `https://gachpala-server.onrender.com/api/v1/admin/users/${userId}/suspend`;
           break;
         case "activate":
-          url = `http://localhost:5000/api/v1/admin/users/${userId}/activate`;
+          url = `https://gachpala-server.onrender.com/api/v1/admin/users/${userId}/activate`;
           break;
         case "delete":
-          url = `http://localhost:5000/api/v1/admin/users/${userId}`;
+          url = `https://gachpala-server.onrender.com/api/v1/admin/users/${userId}`;
           method = "DELETE";
           break;
         case "promote":
-          url = `http://localhost:5000/api/v1/admin/users/${userId}`;
+          url = `https://gachpala-server.onrender.com/api/v1/admin/users/${userId}`;
           method = "PUT";
           body = JSON.stringify({ role: "VIP" });
           break;
         case "demote":
-          url = `http://localhost:5000/api/v1/admin/users/${userId}`;
+          url = `https://gachpala-server.onrender.com/api/v1/admin/users/${userId}`;
           method = "PUT";
           body = JSON.stringify({ role: "user" });
           break;
@@ -207,7 +209,7 @@ export default function UsersPage() {
     try {
       setIsSaving(true);
       const res = await fetch(
-        `http://localhost:5000/api/v1/admin/users/${selectedUser.id}`,
+        `https://gachpala-server.onrender.com/api/v1/admin/users/${selectedUser.id}`,
         {
           method: "PUT",
           headers: {

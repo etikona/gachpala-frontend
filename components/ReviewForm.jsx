@@ -10,7 +10,8 @@ import { toast } from "sonner";
 import { Loader2, Edit, Trash2 } from "lucide-react";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://gachpala-server.onrender.com/api/v1";
 
 export default function ReviewForm({ productId, onReviewSubmitted }) {
   const [userRating, setUserRating] = useState(0);

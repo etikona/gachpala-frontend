@@ -4,9 +4,11 @@
 import { useState, useEffect } from "react";
 import Rating from "./Rating";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://gachpala-server.onrender.com/api/v1";
 
 export default function ProductReviews({ productId }) {
   const [reviews, setReviews] = useState([]);
@@ -78,10 +80,12 @@ export default function ProductReviews({ productId }) {
               </h4>
               {review.user_avatar && (
                 <div className="w-8 h-8 rounded-full overflow-hidden mt-1">
-                  <img
+                  <Image
                     src={review.user_avatar}
                     alt={review.username}
                     className="w-full h-full object-cover"
+                    width={32}
+                    height={32}
                   />
                 </div>
               )}
