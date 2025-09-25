@@ -507,7 +507,7 @@ export default function UserDashboard() {
                       Welcome Back, Plant Lover!
                     </h2>
                     <p className="text-gray-400 max-w-2xl">
-                      Check your plant's health, get AI-powered care tips, and
+                      Check your plants health, get AI-powered care tips, and
                       manage your garden all in one place.
                       {dashboardData && (
                         <span className="block mt-1">
@@ -1008,7 +1008,7 @@ export default function UserDashboard() {
                                         disease: e.target.value,
                                       })
                                     }
-                                    placeholder="Enter disease or 'None'"
+                                    placeholder="Enter disease or None"
                                     className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-emerald-400 focus:outline-none"
                                   />
                                 </div>

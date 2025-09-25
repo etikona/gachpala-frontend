@@ -414,7 +414,7 @@ const ShopLandingPage = () => {
               Why Choose GreenLeaf?
             </h2>
             <p className="text-slate-400 text-xl leading-relaxed">
-              We're more than just a plant shop - we are your partners in
+              We are more than just a plant shop - we are your partners in
               creating a greener, healthier living space.
             </p>
           </div>
@@ -438,7 +438,7 @@ const ShopLandingPage = () => {
               },
               {
                 title: "30-Day Health Guarantee",
-                desc: "Money-back guarantee on every plant's health and vitality",
+                desc: "Money-back guarantee on every plants health and vitality",
                 icon: "✅",
               },
             ].map((feature, i) => (

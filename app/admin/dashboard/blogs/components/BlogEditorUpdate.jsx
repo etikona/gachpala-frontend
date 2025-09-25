@@ -132,7 +132,7 @@ const BlogEditorUpdate = ({ blogData }) => {
     appendField("author", post.author);
     appendField("publishDate", formatDate(post.publishDate));
 
-    // Handle tags - ensure it's always a string
+    // Handle tags - ensure it is always a string
     const tagsValue = Array.isArray(post.tags)
       ? post.tags.filter((tag) => tag.trim()).join(",")
       : "";

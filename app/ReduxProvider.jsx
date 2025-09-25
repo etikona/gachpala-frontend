@@ -11,7 +11,7 @@ export default function ReduxProvider({ children }) {
     setIsMounted(true);
   }, []);
 
-  // Don't render anything until the component is mounted on the client
+  // Dont render anything until the component is mounted on the client
   if (!isMounted) {
     return null;
   }

@@ -23,8 +23,8 @@ export default function NotFound() {
         {/* Message */}
         <h2 className="text-2xl font-semibold mb-4">Plant Page Not Found</h2>
         <p className="text-gray-400 mb-8">
-          Sorry, the page you're looking for seems to have grown roots and
-          wandered off. Let's help you find your way back to our garden of AI
+          Sorry, the page you are looking for seems to have grown roots and
+          wandered off. Let us help you find your way back to our garden of AI
           insights and plant-based products.
         </p>
 

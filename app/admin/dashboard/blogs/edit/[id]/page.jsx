@@ -86,7 +86,7 @@ export default function EditBlogPostPage() {
             Error Loading Post
           </h2>
           <p className="text-gray-400 mb-6">
-            {error || "The blog post couldn't be loaded."}
+            {error || "The blog post could not be loaded."}
           </p>
           <button
             onClick={() => router.push("/admin/dashboard/blog")}

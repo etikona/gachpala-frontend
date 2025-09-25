@@ -807,7 +807,7 @@ export default function UsersPage() {
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete{" "}
-              {selectedUser?.name}'s account and remove all associated data.
+              {selectedUser?.name} is account and remove all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -830,7 +830,7 @@ export default function UsersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Suspend User Account?</AlertDialogTitle>
             <AlertDialogDescription>
-              Suspending {selectedUser?.name}'s account will restrict their
+              Suspending {selectedUser?.name}is account will restrict their
               access to the platform. You can reactivate their account at any
               time.
             </AlertDialogDescription>

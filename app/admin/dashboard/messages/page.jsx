@@ -35,7 +35,7 @@ export default function MessagesPage() {
       sender: "John Smith",
       email: "john@example.com",
       subject: "Order #ORD-001 issue",
-      preview: "Hi, I haven't received my order yet...",
+      preview: "Hi, I have not received my order yet...",
       date: "2023-06-15",
       read: false,
       category: "support",
@@ -55,7 +55,7 @@ export default function MessagesPage() {
       sender: "Michael Brown",
       email: "michael@example.com",
       subject: "Account suspension",
-      preview: "Why was my account suspended? I didn't violate any...",
+      preview: "Why was my account suspended? I did not violate any...",
       date: "2023-06-16",
       read: false,
       category: "support",
@@ -65,7 +65,7 @@ export default function MessagesPage() {
       sender: "Plant Commerce Team",
       email: "team@plantcommerce.com",
       subject: "New feature announcement",
-      preview: "We're excited to announce our new bulk ordering system...",
+      preview: "We are excited to announce our new bulk ordering system...",
       date: "2023-06-17",
       read: true,
       category: "announcement",
@@ -336,10 +336,10 @@ export default function MessagesPage() {
                   <div className="prose prose-invert max-w-none">
                     <p>Hi Admin Team,</p>
                     <p className="mt-4">
-                      I'm writing regarding my recent order (#ORD-001). I placed
-                      this order on June 10th and it was marked as shipped on
-                      June 12th, but I still haven't received it. The tracking
-                      information hasn't been updated in 5 days.
+                      I am writing regarding my recent order (#ORD-001). I
+                      placed this order on June 10th and it was marked as
+                      shipped on June 12th, but I still have not received it.
+                      The tracking information has not been updated in 5 days.
                     </p>
                     <p className="mt-4">
                       Could you please look into this and let me know the

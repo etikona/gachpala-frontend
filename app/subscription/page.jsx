@@ -753,7 +753,7 @@ const SubscriptionPage = () => {
                 What happens when I cancel?
               </h4>
               <p className="text-sm text-gray-400">
-                You'll continue to have access to your current plan features
+                You will continue to have access to your current plan features
                 until the end of your billing period.
               </p>
             </div>

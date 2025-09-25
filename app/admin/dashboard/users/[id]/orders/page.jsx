@@ -254,7 +254,7 @@ export default function OrderHistoryPage() {
               <Package className="h-16 w-16 text-gray-500 mb-4" />
               <p className="text-gray-400 text-lg">No orders found</p>
               <p className="text-gray-500 mt-2">
-                This user hasn't placed any orders yet
+                This user has not placed any orders yet
               </p>
             </div>
           )}

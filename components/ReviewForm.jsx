@@ -273,7 +273,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }) {
       {!localStorage.getItem("token") && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
           <p className="text-amber-800 text-sm">
-            💡 You're submitting as a guest. To manage your reviews later,
+            💡 You are submitting as a guest. To manage your reviews later,
             please create an account.
           </p>
         </div>

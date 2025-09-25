@@ -431,7 +431,7 @@ const HomePage = () => {
                 step: "01",
                 title: "Scan Your Plant",
                 description:
-                  "Use our mobile app to scan your plant using your phone's camera",
+                  "Use our mobile app to scan your plant using your phones camera",
               },
               {
                 step: "02",
