@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SlidersHorizontal, Search, Loader2 } from "lucide-react";
+import { SlidersHorizontal, Search, Loader2, Sparkles } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -22,9 +22,6 @@ const API_BASE_URL =
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
-  // console.log(products[0]?.price);
-  const newPrice = products[0]?.price;
-  console.log(parseFloat(newPrice));
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -133,53 +130,77 @@ export default function ProductsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12 px-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-950 to-gray-900 py-12 px-4 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 text-emerald-600 animate-spin mx-auto mb-4" />
-          <p className="text-emerald-700">Loading plants...</p>
+          <div className="relative">
+            <Loader2 className="h-12 w-12 text-emerald-400 animate-spin mx-auto mb-4" />
+            <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-lg" />
+          </div>
+          <p className="text-emerald-200">Loading plants...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen  bg-gradient-to-br from-slate-900 via-slate-950 to-gray-900 py-12 px-4">
+      <div className="max-w-7xl mx-auto my-12">
         {/* Header */}
-        <div className="relative rounded-2xl overflow-hidden mb-12 bg-gradient-to-r from-emerald-600 to-teal-500 text-white">
-          <div className="absolute inset-0 bg-[url('/plant-pattern.svg')] bg-repeat opacity-10"></div>
+        <div className="relative rounded-2xl overflow-hidden mb-12 bg-gradient-to-r from-emerald-900/80 via-emerald-800/60 to-teal-900/80 border border-emerald-800/30">
+          {/* Animated background */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-400/5 via-transparent to-transparent" />
+            <div className="absolute top-0 right-0 w-72 h-72 bg-teal-500/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
+          </div>
+
           <div className="relative py-16 px-8 text-center">
-            <h1 className="text-4xl font-serif font-bold mb-4">
+            <div className="inline-flex items-center gap-3 mb-4">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-emerald-300 font-semibold text-sm uppercase tracking-widest">
+                Premium Collection
+              </span>
+            </div>
+
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-emerald-200 via-emerald-100 to-teal-200 bg-clip-text text-transparent">
               Plant Paradise
             </h1>
-            <p className="max-w-xl mx-auto text-emerald-100 text-lg">
+            <p className="max-w-xl mx-auto text-emerald-200/80 text-lg leading-relaxed">
               Discover natures beauty with our carefully curated collection of
-              plants
+              exotic plants
             </p>
+
+            {/* Floating elements */}
+            <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-emerald-400/30 rounded-tl-lg" />
+            <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-teal-400/30 rounded-br-lg" />
           </div>
         </div>
 
         {/* Filters and Sorting */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 border border-emerald-100">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50 mb-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-2 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-400 h-4 w-4" />
                 <Input
                   placeholder="Search plants..."
-                  className="pl-10 border-emerald-200 focus:border-emerald-400"
+                  className="pl-10 bg-slate-700/50 border-slate-600 focus:border-emerald-400 text-white placeholder:text-slate-400"
                   value={searchTerm}
                   onChange={handleSearch}
                 />
               </div>
 
               <Select value={category} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="border-emerald-200">
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border-slate-600 text-white">
                   {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
+                    <SelectItem
+                      key={cat}
+                      value={cat}
+                      className="focus:bg-slate-700"
+                    >
                       {cat === "all" ? "All Plants" : cat}
                     </SelectItem>
                   ))}
@@ -187,21 +208,29 @@ export default function ProductsPage() {
               </Select>
 
               <Select value={sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger className="border-emerald-200">
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest Arrivals</SelectItem>
-                  <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                  <SelectItem value="rating">Top Rated</SelectItem>
+                <SelectContent className="bg-slate-800 border-slate-600 text-white">
+                  <SelectItem value="newest" className="focus:bg-slate-700">
+                    Newest Arrivals
+                  </SelectItem>
+                  <SelectItem value="price_asc" className="focus:bg-slate-700">
+                    Price: Low to High
+                  </SelectItem>
+                  <SelectItem value="price_desc" className="focus:bg-slate-700">
+                    Price: High to Low
+                  </SelectItem>
+                  <SelectItem value="rating" className="focus:bg-slate-700">
+                    Top Rated
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <Button
               variant="outline"
-              className="border-emerald-300 text-emerald-700"
+              className="border-slate-600 text-slate-300 hover:border-emerald-400 hover:text-emerald-300"
               onClick={() => {
                 setSearchTerm("");
                 setCategory("all");
@@ -214,15 +243,15 @@ export default function ProductsPage() {
           </div>
 
           {searchTerm || category !== "all" ? (
-            <div className="mt-4 flex items-center gap-2 text-sm text-emerald-600">
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-emerald-300">
               <span>Filtered results:</span>
               {searchTerm && (
-                <span className="bg-emerald-100 px-2 py-1 rounded">
+                <span className="bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-500/30">
                   Search: {searchTerm}
                 </span>
               )}
               {category !== "all" && (
-                <span className="bg-emerald-100 px-2 py-1 rounded">
+                <span className="bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-500/30">
                   Category: {category}
                 </span>
               )}
@@ -231,14 +260,14 @@ export default function ProductsPage() {
         </div>
 
         {/* Product Grid Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-xl font-serif font-semibold text-emerald-900">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <h2 className="text-2xl font-bold text-white">
             {category === "all" ? "All Plants" : category}{" "}
-            <span className="text-emerald-600">
+            <span className="text-emerald-400">
               ({filteredProducts.length})
             </span>
           </h2>
-          <div className="text-sm text-emerald-700">
+          <div className="text-sm text-slate-400">
             Showing {Math.min(startIndex + 1, filteredProducts.length)}-
             {Math.min(startIndex + productsPerPage, filteredProducts.length)} of{" "}
             {filteredProducts.length} plants
@@ -248,14 +277,17 @@ export default function ProductsPage() {
         {/* Product Grid */}
         {currentProducts.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentProducts.map((product) => (
                 <Link
                   key={product.id}
                   href={`/shop/products/${product.id}`}
-                  className="hover:opacity-90 transition-opacity group"
+                  className="group hover:transform hover:-translate-y-1 transition-all duration-300"
                 >
-                  <ProductCard product={product} />
+                  <div className="relative overflow-hidden rounded-xl">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <ProductCard product={product} />
+                  </div>
                 </Link>
               ))}
             </div>
@@ -266,7 +298,7 @@ export default function ProductsPage() {
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
-                    className="border-emerald-200 text-emerald-700"
+                    className="border-slate-600 text-slate-300 hover:border-emerald-400 hover:text-emerald-300"
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                   >
@@ -281,8 +313,8 @@ export default function ProductsPage() {
                         variant={currentPage === page ? "default" : "ghost"}
                         className={
                           currentPage === page
-                            ? "bg-emerald-600 hover:bg-emerald-700"
-                            : "text-emerald-700"
+                            ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                            : "text-slate-300 hover:text-emerald-300"
                         }
                         onClick={() => handlePageChange(page)}
                       >
@@ -293,10 +325,10 @@ export default function ProductsPage() {
 
                   {totalPages > 5 && (
                     <>
-                      <span className="px-2 text-emerald-600">...</span>
+                      <span className="px-2 text-slate-400">...</span>
                       <Button
                         variant="ghost"
-                        className="text-emerald-700"
+                        className="text-slate-300 hover:text-emerald-300"
                         onClick={() => handlePageChange(totalPages)}
                       >
                         {totalPages}
@@ -306,7 +338,7 @@ export default function ProductsPage() {
 
                   <Button
                     variant="outline"
-                    className="border-emerald-200 text-emerald-700"
+                    className="border-slate-600 text-slate-300 hover:border-emerald-400 hover:text-emerald-300"
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                   >
@@ -318,13 +350,16 @@ export default function ProductsPage() {
           </>
         ) : (
           <div className="text-center py-16">
-            <div className="bg-emerald-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="h-12 w-12 text-emerald-600" />
+            <div className="relative inline-block mb-6">
+              <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto border border-emerald-500/30">
+                <Search className="h-12 w-12 text-emerald-400" />
+              </div>
+              <div className="absolute inset-0 bg-emerald-400/10 rounded-full blur-lg" />
             </div>
-            <h3 className="text-xl font-semibold text-emerald-800 mb-2">
+            <h3 className="text-xl font-semibold text-white mb-2">
               No plants found
             </h3>
-            <p className="text-emerald-600 mb-6">
+            <p className="text-slate-400 mb-6">
               Try adjusting your search or filter criteria
             </p>
             <Button
@@ -341,24 +376,35 @@ export default function ProductsPage() {
         )}
 
         {/* Plant Care CTA */}
-        <div className="mt-16 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="mt-16 bg-gradient-to-r from-slate-800/50 to-slate-700/30 rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center gap-8 border border-slate-700/50 backdrop-blur-xl">
           <div className="max-w-md">
-            <h3 className="text-2xl font-serif font-bold text-emerald-900 mb-3">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-5 w-5 text-emerald-400" />
+              <span className="text-emerald-300 font-semibold text-sm uppercase tracking-wide">
+                Expert Guidance
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-3">
               Need Help Choosing?
             </h3>
-            <p className="text-emerald-700 mb-4">
+            <p className="text-slate-300 mb-4 leading-relaxed">
               Our plant experts are here to help you find the perfect green
               companion for your space and lifestyle.
             </p>
             <Button
               variant="outline"
-              className="border-emerald-300 text-emerald-700"
+              className="border-emerald-500/30 text-emerald-300 hover:border-emerald-400 hover:text-emerald-200"
             >
               Get Personalized Recommendations
             </Button>
           </div>
-          <div className="bg-emerald-200/50 rounded-xl w-48 h-48 flex items-center justify-center">
-            <div className="bg-emerald-400 w-32 h-32 rounded-full"></div>
+          <div className="relative">
+            <div className="w-48 h-48 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/20">
+              <div className="w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-400/30 to-teal-400/30 rounded-full" />
+              </div>
+            </div>
+            <div className="absolute -inset-4 bg-emerald-500/5 rounded-2xl blur-xl" />
           </div>
         </div>
       </div>

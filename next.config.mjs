@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["localhost"], // Add your domain
+    domains: ["localhost", "gachpala-server.onrender.com"], // Add your domain
     remotePatterns: [
       {
         protocol: "http",

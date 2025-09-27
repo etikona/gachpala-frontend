@@ -1,4 +1,4 @@
-// app/page.js (Enhanced with Advanced Animations)
+// app/page.js (Enhanced with Advanced Animations - No Emojis)
 "use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -10,6 +10,19 @@ import {
   Heart,
   Shield,
   ChevronLeft,
+  Users,
+  Sprout,
+  CheckCircle,
+  Moon,
+  PawPrint,
+  Wind,
+  ShoppingCart,
+  BookOpen,
+  Truck,
+  Award,
+  UserCheck,
+  Palette,
+  Home,
 } from "lucide-react";
 import shop from "../../public/assets/shop-hero.png";
 import air from "../../public/assets/air-purifying.png";
@@ -204,9 +217,7 @@ const ShopLandingPage = () => {
                 >
                   <Link href="/shop/products">
                     <div className="flex items-center">
-                      <span className="group-hover:rotate-12 transition-transform duration-300">
-                        🛒
-                      </span>
+                      <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                       <span className="ml-2">Shop Plants</span>
                     </div>
                   </Link>
@@ -217,9 +228,7 @@ const ShopLandingPage = () => {
                   className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:border-slate-500 px-8 py-4 text-lg font-semibold backdrop-blur-sm hover:backdrop-blur-md transition-all duration-300 group"
                 >
                   <Link href="/plant-health" className="flex items-center">
-                    <span className="group-hover:rotate-12 transition-transform duration-300">
-                      📚
-                    </span>
+                    <BookOpen className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                     <span className="ml-2">Plant Care Guide</span>
                     <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                   </Link>
@@ -228,16 +237,33 @@ const ShopLandingPage = () => {
 
               <div className="mt-16 flex items-center gap-12">
                 {[
-                  { number: "2.5K+", label: "Happy Customers", icon: "😊" },
-                  { number: "150+", label: "Plant Species", icon: "🌱" },
-                  { number: "99%", label: "Survival Rate", icon: "💚" },
+                  {
+                    number: "2.5K+",
+                    label: "Happy Customers",
+                    icon: Users,
+                    color: "text-blue-400",
+                  },
+                  {
+                    number: "150+",
+                    label: "Plant Species",
+                    icon: Sprout,
+                    color: "text-green-400",
+                  },
+                  {
+                    number: "99%",
+                    label: "Survival Rate",
+                    icon: CheckCircle,
+                    color: "text-emerald-400",
+                  },
                 ].map((stat, index) => (
                   <div
                     key={index}
                     className="hero-stats text-center group cursor-pointer hover:bg-slate-800/30 rounded-xl p-4 transition-all duration-300"
                   >
-                    <div className="text-3xl mb-2 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300">
-                      {stat.icon}
+                    <div className="mb-2 flex justify-center">
+                      <stat.icon
+                        className={`w-8 h-8 ${stat.color} group-hover:scale-125 group-hover:rotate-12 transition-all duration-300`}
+                      />
                     </div>
                     <span className="text-3xl font-bold text-slate-200 block">
                       {stat.number}
@@ -286,15 +312,21 @@ const ShopLandingPage = () => {
 
                 {/* Enhanced floating elements */}
                 <div className="floating-element absolute -bottom-8 -left-8 w-32 h-32 bg-slate-800 rounded-3xl border border-slate-700 shadow-xl z-10 flex items-center justify-center group hover:rotate-12 hover:scale-110 hover:bg-slate-700 transition-all duration-300 cursor-pointer">
-                  <div className="bg-emerald-600 w-16 h-16 rounded-2xl flex items-center justify-center text-2xl group-hover:rotate-[-12deg] transition-transform duration-300"></div>
+                  <div className="bg-emerald-600 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:rotate-[-12deg] transition-transform duration-300">
+                    <Leaf className="w-8 h-8 text-white" />
+                  </div>
                 </div>
 
                 <div className="floating-element absolute -top-8 -right-8 w-28 h-28 bg-slate-800 rounded-3xl border border-slate-700 shadow-xl z-10 flex items-center justify-center group hover:-rotate-12 hover:scale-110 hover:bg-slate-700 transition-all duration-300 cursor-pointer">
-                  <div className="bg-slate-600 w-14 h-14 rounded-2xl flex items-center justify-center text-xl group-hover:rotate-12 transition-transform duration-300"></div>
+                  <div className="bg-slate-600 w-14 h-14 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
+                    <Heart className="w-6 h-6 text-white" />
+                  </div>
                 </div>
 
                 <div className="floating-element absolute top-1/2 -right-4 w-24 h-24 bg-slate-800 rounded-3xl border border-slate-700 shadow-xl z-10 flex items-center justify-center group hover:scale-125 hover:bg-slate-700 transition-all duration-300 cursor-pointer">
-                  <div className="bg-amber-600 w-12 h-12 rounded-2xl flex items-center justify-center text-lg group-hover:rotate-180 transition-transform duration-500"></div>
+                  <div className="bg-amber-600 w-12 h-12 rounded-2xl flex items-center justify-center group-hover:rotate-180 transition-transform duration-500">
+                    <Star className="w-5 h-5 text-white" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -335,21 +367,24 @@ const ShopLandingPage = () => {
                 desc: "Perfect for dim corners and offices",
                 count: "24 plants",
                 img: low,
-                emoji: "🌙",
+                icon: Moon,
+                iconColor: "text-purple-400",
               },
               {
                 title: "Pet Safe Picks",
                 desc: "100% safe for your furry friends",
                 count: "18 plants",
                 img: pet,
-                emoji: "🐕",
+                icon: PawPrint,
+                iconColor: "text-orange-400",
               },
               {
                 title: "Air Purifying Stars",
                 desc: "NASA-approved air cleaners",
                 count: "32 plants",
                 img: air,
-                emoji: "💨",
+                icon: Wind,
+                iconColor: "text-blue-400",
               },
             ].map((collection, i) => (
               <div
@@ -360,9 +395,11 @@ const ShopLandingPage = () => {
                 <div className="h-full p-8 flex flex-col justify-between">
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl group-hover:scale-125 group-hover:rotate-12 transition-all duration-300">
-                        {collection.emoji}
-                      </span>
+                      <div className="p-2 rounded-lg bg-slate-800 group-hover:bg-slate-700 transition-colors duration-300">
+                        <collection.icon
+                          className={`w-6 h-6 ${collection.iconColor} group-hover:scale-125 group-hover:rotate-12 transition-all duration-300`}
+                        />
+                      </div>
                       <h3 className="text-2xl font-bold text-white group-hover:text-emerald-100 transition-colors duration-300">
                         {collection.title}
                       </h3>
@@ -376,10 +413,7 @@ const ShopLandingPage = () => {
                     <span className="text-sm text-slate-500 font-semibold bg-slate-800/60 px-3 py-1 rounded-full group-hover:bg-slate-700 transition-colors duration-300">
                       {collection.count}
                     </span>
-                    <div
-                      variant="ghost"
-                      className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 p-0 h-auto group-hover:underline font-semibold text-lg"
-                    >
+                    <div className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 p-0 h-auto group-hover:underline font-semibold text-lg">
                       <ChevronLeft className="ml-2 h-5 w-5" />
                     </div>
                   </div>
@@ -424,30 +458,42 @@ const ShopLandingPage = () => {
               {
                 title: "Sustainable Sourcing",
                 desc: "Ethically grown plants from eco-conscious nurseries worldwide",
-                icon: "🌱",
+                icon: Sprout,
+                iconColor: "text-green-400",
+                bgColor: "bg-green-400/10",
               },
               {
                 title: "Plant Experts",
                 desc: "24/7 personalized care advice with every single purchase",
-                icon: "👩‍🌾",
+                icon: UserCheck,
+                iconColor: "text-blue-400",
+                bgColor: "bg-blue-400/10",
               },
               {
                 title: "Fast & Safe Shipping",
                 desc: "Climate-controlled delivery with tracking in 2-3 days",
-                icon: "🚚",
+                icon: Truck,
+                iconColor: "text-orange-400",
+                bgColor: "bg-orange-400/10",
               },
               {
                 title: "30-Day Health Guarantee",
                 desc: "Money-back guarantee on every plants health and vitality",
-                icon: "✅",
+                icon: Award,
+                iconColor: "text-purple-400",
+                bgColor: "bg-purple-400/10",
               },
             ].map((feature, i) => (
               <div
                 key={i}
                 className="benefit-card bg-slate-800 rounded-3xl p-8 shadow-lg hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-500 border border-slate-700/50 group hover:scale-105 hover:bg-slate-750 cursor-pointer hover:border-slate-600"
               >
-                <div className="text-5xl mb-6 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500">
-                  {feature.icon}
+                <div
+                  className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-500`}
+                >
+                  <feature.icon
+                    className={`w-8 h-8 ${feature.iconColor} group-hover:rotate-12 transition-all duration-500`}
+                  />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4 group-hover:text-emerald-100 transition-colors duration-300">
                   {feature.title}
@@ -481,24 +527,30 @@ const ShopLandingPage = () => {
             {[
               {
                 review:
-                  "My Monstera arrived in perfect condition and has already grown two new leaves! The care instructions were incredibly detailed and helpful. Best plant purchase ever! 🌿",
+                  "My Monstera arrived in perfect condition and has already grown two new leaves! The care instructions were incredibly detailed and helpful. Best plant purchase ever!",
                 name: "Alexandra P.",
                 role: "Plant Enthusiast",
-                avatar: "👩‍💼",
+                avatar: Users,
+                avatarColor: "text-pink-400",
+                avatarBg: "bg-pink-400/10",
               },
               {
                 review:
-                  "Outstanding quality and service. The plants are healthy and absolutely beautiful. My clients are always impressed with the greenery in my designs! 🎨",
+                  "Outstanding quality and service. The plants are healthy and absolutely beautiful. My clients are always impressed with the greenery in my designs!",
                 name: "Marcus R.",
                 role: "Interior Designer",
-                avatar: "👨‍🎨",
+                avatar: Palette,
+                avatarColor: "text-purple-400",
+                avatarBg: "bg-purple-400/10",
               },
               {
                 review:
-                  "Fast shipping and excellent packaging. My apartment feels like a jungle paradise now! The air quality has improved dramatically. Highly recommended! 🏠",
+                  "Fast shipping and excellent packaging. My apartment feels like a jungle paradise now! The air quality has improved dramatically. Highly recommended!",
                 name: "Sarah K.",
                 role: "Urban Gardener",
-                avatar: "👩‍🌾",
+                avatar: Home,
+                avatarColor: "text-green-400",
+                avatarBg: "bg-green-400/10",
               },
             ].map((testimonial, i) => (
               <div
@@ -508,12 +560,10 @@ const ShopLandingPage = () => {
                 <div className="flex items-center mb-6">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <span
+                      <Star
                         key={star}
-                        className="text-2xl text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300"
-                      >
-                        ⭐
-                      </span>
+                        className="w-5 h-5 text-amber-400 fill-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300"
+                      />
                     ))}
                   </div>
                 </div>
@@ -521,8 +571,12 @@ const ShopLandingPage = () => {
                   {testimonial.review}
                 </p>
                 <div className="flex items-center">
-                  <div className="text-3xl mr-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                    {testimonial.avatar}
+                  <div
+                    className={`w-12 h-12 ${testimonial.avatarBg} rounded-full flex items-center justify-center mr-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}
+                  >
+                    <testimonial.avatar
+                      className={`w-6 h-6 ${testimonial.avatarColor}`}
+                    />
                   </div>
                   <div>
                     <p className="font-bold text-white text-lg group-hover:text-emerald-100 transition-colors duration-300">
