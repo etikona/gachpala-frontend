@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/button";
 import { Leaf, Droplets, Sun, Zap, Shield, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 // Register ScrollTrigger plugin
 if (typeof window !== "undefined") {
@@ -424,7 +425,7 @@ export default function PlantCareEcosystem() {
 
             <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-lg py-6 rounded-xl border border-emerald-400/30 shadow-lg shadow-emerald-500/20 transition-all duration-300">
               <Leaf className="mr-2 h-5 w-5" />
-              Explore Our Ecosystem
+              <Link href="/plant-health">Explore the Ecosystem</Link>
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>

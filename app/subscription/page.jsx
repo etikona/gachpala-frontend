@@ -455,8 +455,8 @@ const SubscriptionPage = () => {
   }
 
   return (
-    <div className="min-h-screen mt-12 bg-gray-900 text-white py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen  bg-gray-900 text-white py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl my-12 mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-2">Subscription Management</h1>

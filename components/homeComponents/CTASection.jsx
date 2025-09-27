@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 // Register ScrollTrigger plugin only on client
 if (typeof window !== "undefined") {
@@ -63,7 +64,9 @@ const CTASection = () => {
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400"
               />
               <Button className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-lg">
-                Start Free Trial
+                <Link href="/subscription" className="w-full">
+                  Start Free Trial
+                </Link>
               </Button>
             </div>
 
