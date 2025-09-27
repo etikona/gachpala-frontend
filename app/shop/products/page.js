@@ -374,39 +374,6 @@ export default function ProductsPage() {
             </Button>
           </div>
         )}
-
-        {/* Plant Care CTA */}
-        <div className="mt-16 bg-gradient-to-r from-slate-800/50 to-slate-700/30 rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center gap-8 border border-slate-700/50 backdrop-blur-xl">
-          <div className="max-w-md">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-5 w-5 text-emerald-400" />
-              <span className="text-emerald-300 font-semibold text-sm uppercase tracking-wide">
-                Expert Guidance
-              </span>
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-3">
-              Need Help Choosing?
-            </h3>
-            <p className="text-slate-300 mb-4 leading-relaxed">
-              Our plant experts are here to help you find the perfect green
-              companion for your space and lifestyle.
-            </p>
-            <Button
-              variant="outline"
-              className="border-emerald-500/30 text-emerald-300 hover:border-emerald-400 hover:text-emerald-200"
-            >
-              Get Personalized Recommendations
-            </Button>
-          </div>
-          <div className="relative">
-            <div className="w-48 h-48 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/20">
-              <div className="w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full flex items-center justify-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-emerald-400/30 to-teal-400/30 rounded-full" />
-              </div>
-            </div>
-            <div className="absolute -inset-4 bg-emerald-500/5 rounded-2xl blur-xl" />
-          </div>
-        </div>
       </div>
     </div>
   );
