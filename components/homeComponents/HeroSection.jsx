@@ -6,6 +6,7 @@ import { useGSAP } from "@gsap/react";
 import { Button } from "@/components/ui/button";
 import { LeafIcon } from "@/components/icons";
 import hero from "../../public/assets/hero.png";
+import Link from "next/link";
 
 // ✅ Register GSAP Plugin (Required)
 gsap.registerPlugin(useGSAP);
@@ -131,16 +132,8 @@ const HeroSection = () => {
                   className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 
                   hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all duration-300"
                 >
-                  Start Your Journey
+                  <Link href="/plant-health">Start Your Journey</Link>
                   <LeafIcon className="ml-2 w-4 h-4" />
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="px-8 py-4 border-white/30 text-white hover:border-emerald-400 rounded-xl"
-                >
-                  Watch Demo
                 </Button>
               </div>
 

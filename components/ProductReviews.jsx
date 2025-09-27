@@ -45,14 +45,14 @@ export default function ProductReviews({ productId }) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
-        <Loader2 className="h-6 w-6 text-emerald-600 animate-spin" />
+        <Loader2 className="h-6 w-6 text-emerald-400 animate-spin" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8 text-emerald-600">
+      <div className="text-center py-8 text-rose-400">
         Failed to load reviews: {error}
       </div>
     );
@@ -60,7 +60,7 @@ export default function ProductReviews({ productId }) {
 
   if (reviews.length === 0) {
     return (
-      <div className="text-center py-8 text-emerald-600">
+      <div className="text-center py-8 text-slate-400">
         No reviews yet. Be the first to review this product!
       </div>
     );
@@ -68,35 +68,42 @@ export default function ProductReviews({ productId }) {
 
   return (
     <div className="space-y-6 mb-12">
+      <h3 className="text-2xl font-bold text-white mb-6">Customer Reviews</h3>
+
       {reviews.map((review) => (
         <div
           key={review.id}
-          className="border-b border-emerald-100 pb-6 last:border-b-0"
+          className="border-b border-slate-700 pb-6 last:border-b-0"
         >
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h4 className="font-medium text-emerald-800">
-                {review.username || "Anonymous User"}
-              </h4>
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex items-center gap-3">
               {review.user_avatar && (
-                <div className="w-8 h-8 rounded-full overflow-hidden mt-1">
+                <div className="w-10 h-10 rounded-full overflow-hidden">
                   <Image
                     src={review.user_avatar}
                     alt={review.username}
                     className="w-full h-full object-cover"
-                    width={32}
-                    height={32}
+                    width={40}
+                    height={40}
                   />
                 </div>
               )}
+              <div>
+                <h4 className="font-medium text-white">
+                  {review.username || "Anonymous User"}
+                </h4>
+                <div className="mt-1">
+                  <Rating rating={review.rating} size="sm" />
+                </div>
+              </div>
             </div>
-            <span className="text-emerald-600 text-sm">
+            <span className="text-slate-400 text-sm">
               {new Date(review.created_at).toLocaleDateString()}
             </span>
           </div>
-          <Rating rating={review.rating} />
+
           {review.review && (
-            <p className="mt-3 text-emerald-700 leading-relaxed">
+            <p className="mt-3 text-slate-300 leading-relaxed">
               {review.review}
             </p>
           )}

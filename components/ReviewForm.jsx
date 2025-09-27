@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import Rating from "@/components/Rating";
 import { toast } from "sonner";
-import { Loader2, Edit, Trash2 } from "lucide-react";
+import { Loader2, Edit, Trash2, Star } from "lucide-react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -175,20 +175,31 @@ export default function ReviewForm({ productId, onReviewSubmitted }) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
-        <Loader2 className="h-6 w-6 text-emerald-600 animate-spin" />
+        <Loader2 className="h-6 w-6 text-emerald-400 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-xl font-serif text-emerald-800 mb-6">
-        {existingRating ? "Edit Your Review" : "Share Your Experience"}
-      </h3>
+    <div className="space-y-6 bg-slate-800/30 rounded-2xl p-6 border border-slate-700/50">
+      <div className="flex items-center gap-3 mb-2">
+        <Star className="h-5 w-5 text-emerald-400" />
+        <h3 className="text-xl font-bold text-white">
+          {existingRating ? "Edit Your Review" : "Share Your Experience"}
+        </h3>
+      </div>
+
+      <p className="text-slate-400 mb-6">
+        {existingRating
+          ? "Update your review to help other plant lovers."
+          : "Your review helps other plant enthusiasts make informed decisions."}
+      </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-emerald-800 mb-2">Your Rating *</label>
+          <label className="block text-white mb-3 font-medium">
+            Your Rating *
+          </label>
           <Rating
             rating={userRating}
             editable={true}
@@ -197,22 +208,25 @@ export default function ReviewForm({ productId, onReviewSubmitted }) {
         </div>
 
         <div>
-          <label htmlFor="comment" className="block text-emerald-800 mb-2">
+          <label
+            htmlFor="comment"
+            className="block text-white mb-3 font-medium"
+          >
             Your Review *
           </label>
           <Textarea
             id="comment"
             value={review}
             onChange={(e) => setReview(e.target.value)}
-            placeholder="Share your experience with this plant..."
-            className="min-h-[120px] border-emerald-200 focus:border-emerald-400"
+            placeholder="Share your experience with this plant... How does it look? How easy is it to care for?"
+            className="min-h-[120px] bg-slate-700/50 border-slate-600 focus:border-emerald-400 text-white placeholder:text-slate-400"
             required
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="name" className="block text-emerald-800 mb-2">
+            <label htmlFor="name" className="block text-white mb-3 font-medium">
               Your Name *
             </label>
             <Input
@@ -221,12 +235,15 @@ export default function ReviewForm({ productId, onReviewSubmitted }) {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="Your Name"
-              className="border-emerald-200 focus:border-emerald-400"
+              className="bg-slate-700/50 border-slate-600 focus:border-emerald-400 text-white placeholder:text-slate-400"
               required
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-emerald-800 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-white mb-3 font-medium"
+            >
               Your Email *
             </label>
             <Input
@@ -235,16 +252,16 @@ export default function ReviewForm({ productId, onReviewSubmitted }) {
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
               placeholder="Your Email"
-              className="border-emerald-200 focus:border-emerald-400"
+              className="bg-slate-700/50 border-slate-600 focus:border-emerald-400 text-white placeholder:text-slate-400"
               required
             />
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 pt-4">
           <Button
             type="submit"
-            className="bg-emerald-600 hover:bg-emerald-700"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
@@ -259,7 +276,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }) {
             <Button
               type="button"
               variant="outline"
-              className="text-rose-600 border-rose-200 hover:bg-rose-50"
+              className="text-rose-400 border-rose-500/30 hover:bg-rose-500/10 hover:text-rose-300"
               onClick={handleDeleteReview}
               disabled={isSubmitting}
             >
@@ -271,8 +288,8 @@ export default function ReviewForm({ productId, onReviewSubmitted }) {
       </form>
 
       {!localStorage.getItem("token") && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <p className="text-amber-800 text-sm">
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mt-4">
+          <p className="text-amber-400 text-sm">
             💡 You are submitting as a guest. To manage your reviews later,
             please create an account.
           </p>
